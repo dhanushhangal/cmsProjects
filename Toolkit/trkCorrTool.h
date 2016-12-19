@@ -64,7 +64,7 @@ void trkCorrTool::getCorrTable(TString svname, const int opt){
 	std::cout<<"started to filling!"<<std::endl;
 	for( Long64_t jentry=0; jentry < nentries; jentry++){
 		hi   =-1;
-	       	hj   =-1;
+		hj   =-1;
 		if( inputConfig.evtSelection(jentry)) continue;
 		weight[1]=inputConfig.weight1(jentry);
 		weight[2]=weight[1]*inputConfig.weight2(jentry);
@@ -90,6 +90,7 @@ void trkCorrTool::getCorrTable(TString svname, const int opt){
 			for(int k=0;k<opt;k++){
 				hreco[hi][hj][k]->Fill(_t->trkEta->at(j),_t->trkPhi->at(j),weight[k]);
 			}
+		}
 	}
 	TFile *wf = TFile::Open(svname,"recreate");
 	for( int i =0; i<ncentBin; i++){
@@ -97,7 +98,7 @@ void trkCorrTool::getCorrTable(TString svname, const int opt){
 			for ( int k = 0; k< opt; k++){
 				hgen[i][j][k]->Write();
 				hreco[i][j][k]->Write();
-				}
+			}
 		}
 	}
 	return;
