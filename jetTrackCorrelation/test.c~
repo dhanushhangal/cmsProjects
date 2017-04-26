@@ -1,0 +1,11 @@
+
+#include "histJetTrackCorrelation.h"
+
+void test(){
+	histJetTrackCorrelation * hc= new histJetTrackCorrelation();
+	hc->addInclusiveSet();
+	hc->addCorrelationSet("test");
+	//hc->saveAll("out.root");
+	//histCollection * hc= new histCollection();
+	//hc->addHist("je",t_eta);
+}
