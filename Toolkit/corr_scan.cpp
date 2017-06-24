@@ -11,9 +11,8 @@
 using namespace std;
 #define nhibin 50
 #define nptbin 10
-//predefinition
+//predefinition for pt bin, cent bin.
 int hibins[nhibin+1];
-
 int increment = 4;
 float ptbins[11] = {0.5, 0.7, 1, 2, 3, 4, 8, 12, 16, 20 ,300};
 

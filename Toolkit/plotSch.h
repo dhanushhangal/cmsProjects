@@ -2,7 +2,6 @@
 
 #ifndef PLOTSCH_H
 #define PLOTSCH_H
-
 #ifndef TH1_H
 #define TH1_H
 #include <TH1.h>
@@ -25,6 +24,8 @@ class plotSch{
 		void SetRatioRange(float min, float max);
 		void SetPlotRange(float min, float max);
 		void addPlot(TPad* pad, TF1* f, int n);
+
+		void legendConfig();
 };
 
 

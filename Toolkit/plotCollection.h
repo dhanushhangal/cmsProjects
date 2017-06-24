@@ -1,4 +1,6 @@
 
+#ifndef CANVASX
+#define CANVASX
 //in this header file, I just collect all the plot scheme I used to avoid the repeat working.
 //
 //========================================================================
@@ -21,10 +23,71 @@ TCanvas *canvasX::getCanvas(){
 	return (TCanvas*) xc;
 }
 //end of definition of base class ========================================
+#endif
 
+#ifndef XSTANRDARD
+#define XSTANRDARD
+class xStandard : public canvasX{
+	public:
+		std::vector<TH1*> * hist_vec;
+		TLegend* lg;
+	public:
+		xStandard(TString name, TString title= "", double width = 600,double height=500);
+		void addEntry(TH1* hnum, int marker, Color_t color, TString leg=""); 
+		void histConfig(TH1* h); 
+		void padConfig(TPad* p); 
+		void Draw(TString opt=""); 
+};
 
+xStandard::xStandard(TString name, TString title = "", double width = 600,double height=500): 
+	canvasX(name, title, width, height)
+{
+	hist_vec = new std::vector<TH1*>();	
+	lg = new TLegend(0.65, 0.75, 0.85,0.85);
+	lg->SetFillColor(0); 
+	lg->SetBorderSize(0);
+}
+
+void xStandard::addEntry(TH1* h, int marker, Color_t color, TString leg=""){
+	TH1* htmp = (TH1*) h->Clone();
+	htmp->SetMarkerStyle(marker);
+	htmp->SetMarkerColor(color);
+	htmp->SetLineColor(color);
+	hist_vec->push_back(htmp);
+	lg->AddEntry(htmp, leg,"lp");
+}
+
+void xStandard::histConfig(TH1* h ){
+	h->SetStats(0);
+	h->GetXaxis()->SetTickLength(0.04);
+	h->GetYaxis()->SetTickLength(0.04);
+	h->GetXaxis()->CenterTitle(true);
+	h->GetXaxis()->SetLabelSize(0.05);
+	h->GetYaxis()->SetLabelSize(0.05);
+	h->GetXaxis()->SetTitleSize(0.05);
+	h->GetYaxis()->SetTitleSize(0.05);
+}
+
+void xStandard::padConfig(TPad*p ){
+}
+
+void xStandard::Draw(TString opt){
+	xc->cd();
+	opt = opt+"same";
+	padConfig((TPad*) gPad);
+	for(auto &it : *hist_vec){
+		histConfig(it);
+		it->Draw(opt);
+	}	
+	lg->Draw();
+}
+
+#endif
 //--------------------------------
 // the plot for efficiency -------
+// The class to plot the efficiency for trakcing or other stuff. 
+// The TGraphAsymmErrors has been used for getting the efficiency (ratio).
+// The Poisson Divide has been set for default.
 //--------------------------------
 class xEfficiency: public canvasX{
 	public:
@@ -72,7 +135,11 @@ void xEfficiency::Draw(TString opt){
 }
 // end of definition for xEfficiency -------------------------------
 //------------------------------------------------------------------
-//-----------------       xRatioPlot      --------------------------
+//-----------------       xRatioPlot      -------------------------- 
+//the canvas has been divide into two un-equal size sub pads, upper and lower one.
+//Upper one for showing one or two pairs of histograms together and the
+//lower one for showing the ratio for each pairs. 
+//(The lower pad will be a little bit small in height comparing to the upper one). 
 //------------------------------------------------------------------
 class xRatioPlot : public canvasX{
 	public:
