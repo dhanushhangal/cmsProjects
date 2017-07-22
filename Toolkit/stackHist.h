@@ -23,6 +23,8 @@ class stackHist{
 		int lineW;
 		float xmin, xmax, ymin, ymax;
 		float xmind, xmaxd, ymind, ymaxd;
+		float xtitleSize, ytitleSize;
+		float xlabelSize, ylabelSize;
 		//TLegend* tl_stack;
 		bool doDiff;
 		stackHist(TString name, TString title ="")
@@ -38,14 +40,21 @@ class stackHist{
 			ytitle = "";
 			lineW = 1;
 			doDiff=false;
+			xtitleSize=0.07;
+			ytitleSize=0.07;
+			xlabelSize=0.07;
+			ylabelSize=0.07;
 		}
 
+		void addHist(TH1* h);
 		void addHist(TH1** h ,int num, float *weight = NULL);
 		void addDiff(TH1** h ,int num, float *weight = NULL);
 		TH1* sumOver();
 		int drawStack(TString opt ="", TString addOpt = "hist");
 		int drawDiff(TString opt ="", TString addOpt = "hist");
 		void stackConfig(THStack* hstt);
+		void setTitleSize(float, TString axis="x");
+		void setLabelSize(float, TString axis="x");
 		void setRange(float, float, TString ax = "x");
 		void setFillColor();
 		void drawSum(TString opt = "same");
@@ -53,6 +62,10 @@ class stackHist{
 				bool isDiff = false, size_t n=0);
 };
 
+void stackHist::addHist(TH1* h){
+	int nn = hist_trunk.size();
+	hist_trunk.push_back((TH1*) h->Clone(Form("_%d", nn)));
+}
 void stackHist::addHist(TH1** h ,int num, float *weight){
 	TH1** hh = h;
 	for(int i=0;i<num;i++){
@@ -167,10 +180,10 @@ int stackHist::drawDiff(TString opt ="", TString addOpt = "hist"){
 }
 
 void stackHist::stackConfig(THStack* hstt){
-	hstt->GetYaxis()->SetLabelSize(0.05);
-	hstt->GetXaxis()->SetLabelSize(0.05);
-	hstt->GetYaxis()->SetTitleSize(0.07);
-	hstt->GetXaxis()->SetTitleSize(0.07);
+	hstt->GetYaxis()->SetLabelSize(ylabelSize);
+	hstt->GetXaxis()->SetLabelSize(xlabelSize);
+	hstt->GetYaxis()->SetTitleSize(ytitleSize);
+	hstt->GetXaxis()->SetTitleSize(xtitleSize);
 	hstt->GetYaxis()->SetTitleOffset(0.8);
 	hstt->GetXaxis()->SetTitleOffset(0.7);
 	hstt->GetXaxis()->SetNdivisions(505);
@@ -255,6 +268,14 @@ TLegend* stackHist::makeLegend(TString* tl_txt, float x1, float y1, float x2, fl
 	return tl_stack;
 }
 
+void stackHist::setTitleSize(float size, TString axis){
+	if(axis == "x") xtitleSize = size;
+	else ytitleSize = size;
+}
+void stackHist::setLabelSize(float size, TString axis){
+	if(axis == "x") xlabelSize = size;
+	else ylabelSize = size;
+}
 void stackHist::drawSum(TString opt){
 	hist_sum = sumOver();
 	hist_sum->SetMarkerStyle(24);

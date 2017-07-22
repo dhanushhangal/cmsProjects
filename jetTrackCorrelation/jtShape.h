@@ -94,12 +94,13 @@ void jtShape::smoothMixingTable(TH2D* mix){
 		h_mix_proj_debug2->SetLineColorAlpha(kRed-3,0.5);
 		h_mix_proj_debug1->Rebin(4);
 		h_mix_proj_debug2->Rebin(4);
+		h_mix_proj_debug1->SetStats(0);
 		h_mix_proj_debug1->Draw();
-		h_mix_proj_debug2->Draw("same");
+		//h_mix_proj_debug2->Draw("same");
 		TLegend* tl_mix = new TLegend(0.35, 0.2, 0.7, 0.4);
 		tl_mix->SetLineColor(0);
 		tl_mix->AddEntry(h_mix_proj_debug1, "raw input mixing");
-		tl_mix->AddEntry(h_mix_proj_debug2, "reproduced mixing");
+		//tl_mix->AddEntry(h_mix_proj_debug2, "reproduced mixing");
 		tl_mix->Draw();
 	}
 	//mix->Scale(1.0/mean);

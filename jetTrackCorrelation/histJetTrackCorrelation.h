@@ -31,20 +31,23 @@ class histJetTrackCorrelation : public histCollection{
 			trkPtLabel->push_back("trkPt999");
 			jetPtLabel->push_back("jetPt120");
 			jetPtLabel->push_back("jetPt300");
+			ncent = centLabel->size()-1;
+			npt = trkPtLabel->size()-1;
+			njtpt = jetPtLabel->size()-1;
 		}
 		void addCorrelationSet(TString caption);
-		void addInclusiveSet(bool doMix=true, int ncent=4, int npt=10, int njtpt = 1);
-		void addJetSpectra(TString caption, int ncent = 4);
+		void addInclusiveSet(bool doMix=true);
+		void addJetSpectra(TString caption);
 		bool labelCheck(int ncent, int npt, int njtpt);
+
+	private: 
+		int ncent, npt, njtpt;
 };
 
 #endif
 
 
 void histJetTrackCorrelation::addCorrelationSet(TString caption){
-	int ncent = centLabel->size()-1;
-	int npt = trkPtLabel->size()-1;
-	int njtpt = jetPtLabel->size()-1;
 	TString stmp;
 	for(int i=0; i<ncent;++i){
 		for(int j=0;j<npt; ++j){
@@ -58,13 +61,16 @@ void histJetTrackCorrelation::addCorrelationSet(TString caption){
 	}
 }
 
-void histJetTrackCorrelation::addInclusiveSet(bool doMix, int ncent, int npt, int njtpt){
+void histJetTrackCorrelation::addInclusiveSet(bool doMix){
 	addCorrelationSet("Inclusive");
+	addCorrelationSet("Inclusive_pTweighted");
 	if( doMix) addCorrelationSet("Mixing");
+	if( doMix) addCorrelationSet("Mixing_pTweighted");
+	addJetSpectra("InclusiveJet");
 	return;
 }
 
-void histJetTrackCorrelation::addJetSpectra(TString caption, int ncent){
+void histJetTrackCorrelation::addJetSpectra(TString caption){
 	if( centLabel->size()<ncent+1 ) {
 		std::cout<<"centLabel dosen't ready"<<endl;
 		return;

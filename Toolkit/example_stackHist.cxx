@@ -49,6 +49,7 @@ void example_stackHist(){
 	 * makeLegend(TString * tl_txt, float x1, float y1, float x2, float y2);
 	 * where tl_txt is the pointer to the TString array.
 	 */
+
 	TString tl_txt [5] = {"gaus 1", "gaus 2", "gaus 3", "gaus 4", "gaus 5"};
 	TLegend* ll = st->makeLegend(tl_txt, 0.15, 0.56, 0.7, 0.86);
 	ll->Draw();
@@ -56,12 +57,14 @@ void example_stackHist(){
 	/* this is an example to show how to get the difference stack, which is similar to the previous one
 	 * but using addDiff and drawDiff.
 	 */
+
 	for(int i=0;i<4;i++){
 		hdiff[i] = (TH1D*)h[i]->Clone(Form("hdiff_%d",i));
 		hdiff[i]->Add(h[4], -1);
 	}
 	TCanvas* c2 = new TCanvas("c2","",800,600);
 	c2->cd();
+	gPad->SetLogy();
 
 	st->addDiff((TH1**)hdiff,4, weight);
 	st->setRange(-10, 5,"xd");

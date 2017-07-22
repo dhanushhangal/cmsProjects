@@ -2,13 +2,13 @@
 #ifndef JETTRACKCORRELATION_H
 #define JETTRACKCORRELATION_H
 
-#include "inputTree.h"
 #include "histJetTrackCorrelation.h"
 
 class jetTrackCorrelation {
 	public:
 		long nentries; 
-		inputTree* inputTree;
+		TTree * inputTree; // point to the signal datat tree
+		TTree * mixTree;   // point to the data tree for doing mixing with signal
 		std::vector<int > *config;
 		std::vector<TString > *contral_seq;
 		std::map<TString, int > seq;
@@ -29,8 +29,7 @@ class jetTrackCorrelation {
 		void run();
 }
 
-void ijetTrackCorrelation::nitialization(){
-	jtpt = ;
+void jetTrackCorrelation::initialization(){
 }
 
 void jetTrackCorrelation::run(){
