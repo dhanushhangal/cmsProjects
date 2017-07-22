@@ -29,10 +29,10 @@ class histJetTrackCorrelation : public histCollection{
 			trkPtLabel->push_back("trkPt16");
 			trkPtLabel->push_back("trkPt20");
 			trkPtLabel->push_back("trkPt999");
-			jetPtLabel->push_back("jetPt100");
+			jetPtLabel->push_back("jetPt120");
 			jetPtLabel->push_back("jetPt300");
 		}
-		void addCorrelationSet(TString caption, int ncent=4, int npt=10, int njtpt=1);
+		void addCorrelationSet(TString caption);
 		void addInclusiveSet(bool doMix=true, int ncent=4, int npt=10, int njtpt = 1);
 		void addJetSpectra(TString caption, int ncent = 4);
 		bool labelCheck(int ncent, int npt, int njtpt);
@@ -40,24 +40,11 @@ class histJetTrackCorrelation : public histCollection{
 
 #endif
 
-bool histJetTrackCorrelation::labelCheck(int ncent, int npt, int njtpt){
-	if( centLabel->size()<ncent+1 ) {
-		std::cout<<"centLabel dosen't ready"<<endl;
-		return true;
-	}
-	else if( trkPtLabel->size()<npt+1 ) {
-		std::cout<<"trkPtLabel dosen't ready"<<endl;
-		return true;
-	}
-	else if( jetPtLabel->size()<njtpt+1 ) {
-		std::cout<<"jetPtLabel dosen't ready"<<endl;
-		return true;
-	}
-	return false;
-}
 
-void histJetTrackCorrelation::addCorrelationSet(TString caption, int ncent, int npt, int njtpt){
-	if (labelCheck(ncent, npt ,njtpt)) return;
+void histJetTrackCorrelation::addCorrelationSet(TString caption){
+	int ncent = centLabel->size()-1;
+	int npt = trkPtLabel->size()-1;
+	int njtpt = jetPtLabel->size()-1;
 	TString stmp;
 	for(int i=0; i<ncent;++i){
 		for(int j=0;j<npt; ++j){
@@ -72,8 +59,8 @@ void histJetTrackCorrelation::addCorrelationSet(TString caption, int ncent, int 
 }
 
 void histJetTrackCorrelation::addInclusiveSet(bool doMix, int ncent, int npt, int njtpt){
-	addCorrelationSet("Inclusive", ncent, npt, njtpt);
-	if( doMix) addCorrelationSet("Mixing", ncent, npt, njtpt);
+	addCorrelationSet("Inclusive");
+	if( doMix) addCorrelationSet("Mixing");
 	return;
 }
 
