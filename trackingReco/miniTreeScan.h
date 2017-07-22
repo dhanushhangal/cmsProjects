@@ -2,6 +2,10 @@
 #ifndef inTree_H
 #include "inTree.h"
 #endif
+
+#include "TMath.h"
+#include "iostream"
+
 int hiBin = -999;
 float vz = -999;
 float pthat = -999;
@@ -43,13 +47,10 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 	outTree->Branch("hiBin", &hiBin);
 	outTree->Branch("vz", &vz);
 	outTree->Branch("trkPt", &trkPt);
-	outTree->Branch("trkPtError", &trkPtError);
 	outTree->Branch("trkEta", &trkEta);
 	outTree->Branch("trkPhi", &trkPhi);
 	outTree->Branch("trkDz", &trkDz);
-	outTree->Branch("trkDzError", &trkDzError);
 	outTree->Branch("trkDxy", &trkDxy);
-	outTree->Branch("trkDxyError", &trkDxyError);
 	if( isMC){
 		outTree->Branch("genPt", &genPt );
 		outTree->Branch("genEta", &genEta );
@@ -59,25 +60,22 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 
 	Long64_t nentries = t->fChain->GetEntriesFast();
 	for(Long64_t jentry = 0; jentry<nentries; ++jentry){
-		if(jentry %1000) std::cout<<"processing event "<<jentry<<std::endl;
+		if(jentry %1000==0) std::cout<<"processing event "<<jentry<<std::endl;
 		t->GetEntry(jentry);
 		if( eventCuts(t ) ) continue;
 		hiBin = t->hiBin;
 		vz = t->vz;
 		if(isMC) pthat = t->pthat;
-		for( int i=0; i<t->trkPt->size(); ++i){
+		for( int i=0; i<int(t->trkPt->size()); ++i){
 			if( trackCuts(t, i)) continue;
 			trkPt      .push_back(t->trkPt->at(i));
-			trkPtError .push_back(t->trkPt->at(i));
 			trkEta     .push_back(t->trkPt->at(i));
 			trkPhi     .push_back(t->trkPt->at(i));
 			trkDz      .push_back(t->trkPt->at(i));
 			trkDxy     .push_back(t->trkPt->at(i));
-			trkDzError .push_back(t->trkPt->at(i));
-			trkDxyError.push_back(t->trkPt->at(i));
 		}
 		if( isMC){
-			for(int i=0; i<t->pt->size(); ++i){
+			for(int i=0; i<int(t->pt->size()); ++i){
 				if(genTrackCuts(t, i)) continue;
 				genPt     .push_back(t->pt->at(i));
 				genEta    .push_back(t->eta->at(i));
@@ -87,13 +85,10 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 		}
 		outTree->Fill();
 		trkPt      .clear();
-		trkPtError .clear();
 		trkEta     .clear();
 		trkPhi     .clear();
 		trkDz      .clear();
 		trkDxy     .clear();
-		trkDzError .clear();
-		trkDxyError.clear();
 		if( isMC){
 			genPt     .clear();
 			genEta    .clear();

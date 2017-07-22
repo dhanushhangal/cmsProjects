@@ -119,8 +119,6 @@ inTree::inTree(TTree *tree, bool isMC) : fChain(0)
 	// if parameter tree is not specified (or zero), connect the file
 	// used to generate this class and read the Tree.
 	Init(tree, isMC);
-if ( isMC)std::cout<<"MC tree is ready"<<std::endl;
-else std::cout<<"data tree is ready"<<std::endl;
 }
 
 inTree::~inTree()
