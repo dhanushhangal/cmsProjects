@@ -2,31 +2,32 @@
 #ifndef inTree_H
 #include "inTree.h"
 #endif
-int hiBin;
-float vz;
+int hiBin = -999;
+float vz = -999;
+float pthat = -999;
 std::vector<float> trkPt, trkEta, trkPhi, trkPtError, trkDz, trkDzError, trkDxy, trkDxyError;
 std::vector<float> genPt, genEta, genPhi, genCharge;
 
 bool eventCuts(inTree *t){
-	if ( t->HBHENoiseFilterResultRun2Loose ==0) return 0;
-	if ( t->pcollisionEventSelection ==0) return 0;
-	if ( t->pprimaryVertexFilter ==0) return 0;
-	if ( t->phfCoincFilter3 ==0) return 0;
-	if ( t->vz>15 || t->vz<-15) return 0;
-	return 1;
+	if ( t->HBHENoiseFilterResultRun2Loose ==0) return 1;
+	if ( t->pcollisionEventSelection ==0) return 1;
+	if ( t->pprimaryVertexFilter ==0) return 1;
+	if ( t->phfCoincFilter3 ==0) return 1;
+	if ( t->vz>15 || t->vz<-15) return 1;
+	return 0;
 }
 
 bool trackCuts(inTree *t, int j){
-	if (!t->highPurity->at(j)) return 0;
+	if (!t->highPurity->at(j)) return 1;
 	float Et = (t->pfHcal->at(j)+t->pfEcal->at(j))/TMath::CosH(t->trkEta->at(j));
-	if (!(t->trkPt->at(j)<20 || (Et>0.5*t->trkPt->at(j)))) return 0;
-	if ( TMath::Abs(t->trkDz->at(j)/t->trkDzError->at(j)) >=3) return 0;
-	if ( TMath::Abs(t->trkDxy->at(j)/t->trkDxyError->at(j)) >=3) return 0;
-	if ( t->trkPtError->at(j)/t->trkPt->at(j)>=0.1) return 0;
-	if ( t->trkPtError->at(j)/t->trkPt->at(j)>=0.3) return 0;
-	if ( t->trkNHit->at(j)< 11) return 0;
-	if ((float)t->trkChi2->at(j)/(float)t->trkNdof->at(j)/(float)t->trkNlayer->at(j)>0.15) return 0;
-	return 1;
+	if (!(t->trkPt->at(j)<20 || (Et>0.5*t->trkPt->at(j)))) return 1;
+	if ( TMath::Abs(t->trkDz->at(j)/t->trkDzError->at(j)) >=3) return 1;
+	if ( TMath::Abs(t->trkDxy->at(j)/t->trkDxyError->at(j)) >=3) return 1;
+	if ( t->trkPtError->at(j)/t->trkPt->at(j)>=0.1) return 1;
+	if ( t->trkPtError->at(j)/t->trkPt->at(j)>=0.3) return 1;
+	if ( t->trkNHit->at(j)< 11) return 1;
+	if ((float)t->trkChi2->at(j)/(float)t->trkNdof->at(j)/(float)t->trkNlayer->at(j)>0.15) return 1;
+	return 0;
 }
 
 bool genTrackCuts(inTree *t, int j){
@@ -58,8 +59,12 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 
 	Long64_t nentries = t->fChain->GetEntriesFast();
 	for(Long64_t jentry = 0; jentry<nentries; ++jentry){
+		if(jentry %1000) std::cout<<"processing event "<<jentry<<std::endl;
 		t->GetEntry(jentry);
 		if( eventCuts(t ) ) continue;
+		hiBin = t->hiBin;
+		vz = t->vz;
+		if(isMC) pthat = t->pthat;
 		for( int i=0; i<t->trkPt->size(); ++i){
 			if( trackCuts(t, i)) continue;
 			trkPt      .push_back(t->trkPt->at(i));
