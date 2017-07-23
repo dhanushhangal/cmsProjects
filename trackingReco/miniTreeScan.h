@@ -69,10 +69,10 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 		for( int i=0; i<int(t->trkPt->size()); ++i){
 			if( trackCuts(t, i)) continue;
 			trkPt      .push_back(t->trkPt->at(i));
-			trkEta     .push_back(t->trkPt->at(i));
-			trkPhi     .push_back(t->trkPt->at(i));
-			trkDz      .push_back(t->trkPt->at(i));
-			trkDxy     .push_back(t->trkPt->at(i));
+			trkEta     .push_back(t->trkEta->at(i));
+			trkPhi     .push_back(t->trkPhi->at(i));
+			trkDz      .push_back(t->trkDz->at(i));
+			trkDxy     .push_back(t->trkDxy->at(i));
 		}
 		if( isMC){
 			for(int i=0; i<int(t->pt->size()); ++i){
