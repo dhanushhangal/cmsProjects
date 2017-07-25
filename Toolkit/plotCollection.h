@@ -18,9 +18,13 @@ class canvasX {
 		//virtual TPad* getPad()=0;
 		virtual TCanvas* getCanvas();
 		virtual void Draw(TString opt)=0;
+		virtual void save(TString);
 };
 TCanvas *canvasX::getCanvas(){
 	return (TCanvas*) xc;
+}
+void canvasX::save(TString name){
+	xc->SaveAs(name);
 }
 //end of definition of base class ========================================
 #endif
@@ -155,6 +159,8 @@ class xRatioPlot : public canvasX{
 		void Draw(TString opt ="");
 		void histConfig(TH1* hist);
 		void ratioConfig(TH1* hist);
+		void setYaxisTitle(TString);
+		void setRange(float ,float, TString, int isUp=1);
 
 };
 
@@ -166,16 +172,20 @@ xRatioPlot::xRatioPlot(TString name, TString title, double cwidth, double cheigh
 	ratio_vec = new std::vector<TH1*>();
 	p_upper = new TPad("p_upper","",0.02, 0.45, 1,1);
 	p_lower = new TPad("p_lower","",0.02, 0.07,1 ,0.45);
-	p_upper->SetRightMargin(0.08);
-	p_lower->SetRightMargin(0.08);
+	p_upper->SetRightMargin(0.06);
+	p_lower->SetRightMargin(0.06);
+	p_upper->SetLeftMargin(0.11);
+	p_lower->SetLeftMargin(0.11);
 	p_lower->SetTopMargin(0);
 	p_upper->SetBottomMargin(0);
 	p_lower->SetBottomMargin(0.2);
 	p_lower->SetTickx(1);
+	p_upper->SetGrid(1,1);
+	p_lower->SetGrid(1,1);
 	p_upper->Draw();
 	p_lower->Draw();
-	lg = new TLegend(0.25, 0.1, 0.75,0.35);
-	lg->SetFillColor(0); 
+	lg = new TLegend(0.35, 0.05, 0.7,0.3);
+	lg->SetFillColorAlpha(kWhite, 0); 
 	lg->SetBorderSize(0);
 }
 
@@ -191,8 +201,16 @@ void xRatioPlot::addHistoPair(TString name, TH1* hnum, TH1* hden, TString opt){
 	tmp->Divide(hnum, hden, 1, 1, opt);
 	tmp->SetMarkerColor(kBlack);
 	tmp->SetLineColor(kBlack);
+	tmp->GetYaxis()->SetTitle("Ratio");
 	ratioConfig(tmp);
 	ratio_vec->push_back(tmp);
+}
+void xRatioPlot::setYaxisTitle(TString ytitle){
+	hnum_vec->at(0)->GetYaxis()->SetTitle(ytitle);	
+}
+void xRatioPlot::setRange(float a,float b, TString axis, int isUp=1){
+	if(isUp ) hnum_vec->at(0)->SetAxisRange(a, b, axis);
+	else ratio_vec->at(0)->SetAxisRange(a,b,axis);
 }
 
 void xRatioPlot::Draw(TString opt){
@@ -210,6 +228,8 @@ void xRatioPlot::histConfig(TH1* hist){
 	hist->GetXaxis()->CenterTitle(true);
 	hist->GetXaxis()->SetLabelSize(0.05);
 	hist->GetYaxis()->SetLabelSize(0.05);
+	hist->GetYaxis()->SetTitleOffset(.6);
+	hist->GetYaxis()->SetTitleSize(.07);
 }
 void xRatioPlot::ratioConfig(TH1* hist){
 	hist->SetStats(0);
@@ -219,6 +239,11 @@ void xRatioPlot::ratioConfig(TH1* hist){
 	hist->GetXaxis()->SetLabelSize(0.075);
 	hist->GetYaxis()->SetLabelSize(0.075);
 	hist->GetXaxis()->SetTitleSize(0.08);
+	hist->GetYaxis()->SetTitleOffset(.6);
+	hist->GetYaxis()->SetTitleSize(.08);
+	hist->GetYaxis()->CenterTitle();
+	hist->GetXaxis()->SetTitleOffset(1.2);
+	hist->GetXaxis()->SetTitleSize(.08);
 }
 //end of xRatioPlot --------------------------------------------------------
 /*

@@ -30,6 +30,15 @@ class mTree {
 		vector<float>   *trkPhi;
 		vector<float>   *trkDz;
 		vector<float>   *trkDxy;
+		vector<float>   *trkDzError;
+		vector<float>   *trkDxyError;
+		vector<float>   *trkChi2;
+		vector<float>   *trkPtError;
+		vector<float>   *pfHcal;
+		vector<float>   *pfEcal;
+		vector<int>     *trkNdof;
+		vector<int>     *trkNHit;
+		vector<int>     *trkNlayer;
 		vector<float>   *genPt;
 		vector<float>   *genEta;
 		vector<float>   *genPhi;
@@ -43,12 +52,22 @@ class mTree {
 		TBranch        *b_trkPhi;   //!
 		TBranch        *b_trkDz;   //!
 		TBranch        *b_trkDxy;   //!
+		TBranch        *b_trkDzError;   //!
+		TBranch        *b_trkDxyError;   //!
+		TBranch        *b_trkPtError;   //!
+		TBranch        *b_trkChi2;   //!
+		TBranch        *b_pfEcal;   //!
+		TBranch        *b_pfHcal;   //!
+		TBranch        *b_trkNdof;   //!
+		TBranch        *b_trkNHit;   //!
+		TBranch        *b_trkNlayer;   //!
 		TBranch        *b_genPt;   //!
 		TBranch        *b_genEta;   //!
 		TBranch        *b_genPhi;   //!
 		TBranch        *b_genCharge;   //!
 
-int isMC;
+		int isMC;
+		int trackType;
 
 		mTree(TTree *tree=0, int isMC=0);
 		virtual ~mTree();
@@ -58,9 +77,10 @@ int isMC;
 		virtual void     Init(TTree *tree);
 };
 
-mTree::mTree(TTree *tree, int key) : fChain(0) 
+mTree::mTree(TTree *tree, int key, int isfullTrack) : fChain(0) 
 {
-isMC = key;
+	isMC = key;
+	trackType = isfullTrack;
 	// if parameter tree is not specified (or zero), connect the file
 	// used to generate this class and read the Tree.
 	if (tree == 0) {
@@ -112,8 +132,18 @@ void mTree::Init(TTree *tree)
 	trkPt = 0;
 	trkEta = 0;
 	trkPhi = 0;
+	trkPtError = 0;
 	trkDz = 0;
 	trkDxy = 0;
+	trkDzError = 0;
+	trkDxyError = 0;
+	trkChi2 = 0;
+	pfEcal = 0;
+	pfHcal = 0;
+	trkNdof = 0;
+	trkNHit = 0;
+	trkNlayer = 0;
+
 	genPt = 0;
 	genEta = 0;
 	genPhi = 0;
@@ -129,8 +159,19 @@ void mTree::Init(TTree *tree)
 	fChain->SetBranchAddress("trkPt", &trkPt, &b_trkPt);
 	fChain->SetBranchAddress("trkEta", &trkEta, &b_trkEta);
 	fChain->SetBranchAddress("trkPhi", &trkPhi, &b_trkPhi);
-	fChain->SetBranchAddress("trkDz", &trkDz, &b_trkDz);
-	fChain->SetBranchAddress("trkDxy", &trkDxy, &b_trkDxy);
+	if(trackType){
+		fChain->SetBranchAddress("trkDz", &trkDz, &b_trkDz);
+		fChain->SetBranchAddress("trkDxy", &trkDxy, &b_trkDxy);
+		fChain->SetBranchAddress("trkDzError", &trkDzError, &b_trkDzError);
+		fChain->SetBranchAddress("trkDxyError", &trkDxyError, &b_trkDxyError);
+		fChain->SetBranchAddress("trkPtError", &trkPtError, &b_trkPtError);
+		fChain->SetBranchAddress("trkChi2", &trkChi2, &b_trkChi2);
+		fChain->SetBranchAddress("trkNdof", &trkNdof, &b_trkNdof);
+		fChain->SetBranchAddress("trkNHit", &trkNHit, &b_trkNHit);
+		fChain->SetBranchAddress("trkNlayer", &trkNlayer, &b_trkNlayer);
+		fChain->SetBranchAddress("pfEcal", &pfEcal, &b_pfEcal);
+		fChain->SetBranchAddress("pfHcal", &pfHcal, &b_pfHcal);
+	}
 	if(isMC){
 		fChain->SetBranchAddress("genPt", &genPt, &b_genPt);
 		fChain->SetBranchAddress("genEta", &genEta, &b_genEta);

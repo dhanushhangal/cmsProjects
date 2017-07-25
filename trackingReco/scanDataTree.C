@@ -7,7 +7,7 @@
 
 void ReadFileList(std::string & line, TString file_of_names, bool debug);
 
-void scanDataTree(int jobID=0, bool isMC=0, bool localTest = 0){
+void scanDataTree(int jobID=0, bool isMC=0, bool getFullTrack=0, bool localTest = 0){
 
 	std::string filename;
 	if(localTest) ReadFileList(filename, "test_local.txt", true);
@@ -16,7 +16,7 @@ void scanDataTree(int jobID=0, bool isMC=0, bool localTest = 0){
 	TTree * t = (TTree*)f->Get("mixing_tree");
 	if ( isMC)std::cout<<"MC tree is ready"<<std::endl;
 	else std::cout<<"data tree is ready"<<std::endl;
-	miniTreeScan(t , "tracker.root", isMC);
+	miniTreeScan(t , "tracker.root", isMC, getFullTrack);
 
 }
 void ReadFileList(std::string & tstring_line, TString file_of_names, bool debug)

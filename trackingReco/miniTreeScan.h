@@ -9,7 +9,9 @@
 int hiBin = -999;
 float vz = -999;
 float pthat = -999;
-std::vector<float> trkPt, trkEta, trkPhi, trkPtError, trkDz, trkDzError, trkDxy, trkDxyError;
+std::vector<float> trkPt, trkEta, trkPhi;
+std::vector<float>trkPtError, trkDz, trkDzError, trkDxy, trkDxyError, trkChi2, pfEcal, pfHcal;
+std::vector<int> trkNHit, trkNdof, trkNlayer;
 std::vector<float> genPt, genEta, genPhi, genCharge;
 
 bool eventCuts(inTree *t){
@@ -38,7 +40,7 @@ bool genTrackCuts(inTree *t, int j){
 	return 0;
 }
 
-void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
+void miniTreeScan(TTree *intree , TString save_name, bool isMC=0, bool fullTrack = 0){
 
 	inTree* t = new inTree(intree, isMC);
 	TFile *wf = TFile::Open(save_name, "recreate");
@@ -49,8 +51,8 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 	outTree->Branch("trkPt", &trkPt);
 	outTree->Branch("trkEta", &trkEta);
 	outTree->Branch("trkPhi", &trkPhi);
-	outTree->Branch("trkDz", &trkDz);
-	outTree->Branch("trkDxy", &trkDxy);
+	//outTree->Branch("trkDz", &trkDz);
+	//outTree->Branch("trkDxy", &trkDxy);
 	if( isMC){
 		outTree->Branch("genPt", &genPt );
 		outTree->Branch("genEta", &genEta );
@@ -67,12 +69,23 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 		vz = t->vz;
 		if(isMC) pthat = t->pthat;
 		for( int i=0; i<int(t->trkPt->size()); ++i){
-			if( trackCuts(t, i)) continue;
+			if(fullTrack){
+				trkDz      .push_back(t->trkDz->at(i));
+				trkDxy     .push_back(t->trkDxy->at(i));
+				trkDzError .push_back(t->trkDzError->at(i));
+				trkDxyError.push_back(t->trkDxyError->at(i));
+				trkPtError .push_back(t->trkPtError->at(i));
+				trkChi2.push_back(t->trkChi2->at(i));
+				pfEcal.push_back(t->pfEcal->at(i));
+				pfHcal.push_back(t->pfHcal->at(i));
+				trkNdof.push_back(t->trkNdof->at(i));
+				trkNHit.push_back(t->trkNHit->at(i));
+				trkNlayer.push_back(t->trkNlayer->at(i));
+			}
+			else if( trackCuts(t, i)) continue;
 			trkPt      .push_back(t->trkPt->at(i));
 			trkEta     .push_back(t->trkEta->at(i));
 			trkPhi     .push_back(t->trkPhi->at(i));
-			trkDz      .push_back(t->trkDz->at(i));
-			trkDxy     .push_back(t->trkDxy->at(i));
 		}
 		if( isMC){
 			for(int i=0; i<int(t->pt->size()); ++i){
@@ -87,8 +100,19 @@ void miniTreeScan(TTree *intree , TString save_name, bool isMC=0){
 		trkPt      .clear();
 		trkEta     .clear();
 		trkPhi     .clear();
-		trkDz      .clear();
-		trkDxy     .clear();
+		if(fullTrack){
+			trkDz      .clear();
+			trkDxy     .clear();
+			trkDzError .clear();
+			trkDxyError.clear();
+			trkPtError .clear();
+			trkChi2    .clear();
+			pfEcal     .clear();
+			pfHcal     .clear();
+			trkNdof    .clear();
+			trkNHit    .clear();
+			trkNlayer  .clear();
+		}
 		if( isMC){
 			genPt     .clear();
 			genEta    .clear();
