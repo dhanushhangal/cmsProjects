@@ -10,21 +10,33 @@ class canvasX {
 	protected:
 
 		TCanvas* xc;
+		TString xtitle;
+		TString ytitle;
 	public: 
 		canvasX(TString name, TString title, double width, double height)
 		{
+			xtitle = "";
+			ytitle = "";
 			xc=new TCanvas(name, title, width, height);
 		}
 		//virtual TPad* getPad()=0;
 		virtual TCanvas* getCanvas();
 		virtual void Draw(TString opt)=0;
 		virtual void save(TString);
+		virtual void setXtitle(TString);
+		virtual void setYtitle(TString);
 };
 TCanvas *canvasX::getCanvas(){
 	return (TCanvas*) xc;
 }
 void canvasX::save(TString name){
 	xc->SaveAs(name);
+}
+void canvasX::setYtitle(TString title){
+	ytitle = title;
+}
+void canvasX::setXtitle(TString title){
+	xtitle = title;
 }
 //end of definition of base class ========================================
 #endif
@@ -35,28 +47,32 @@ class xStandard : public canvasX{
 	public:
 		std::vector<TH1*> * hist_vec;
 		TLegend* lg;
+		TLatex tlx;
 	public:
-		xStandard(TString name, TString title= "", double width = 600,double height=500);
-		void addEntry(TH1* hnum, int marker, Color_t color, TString leg=""); 
+		xStandard(TString name, TString title= "", double width = 900,double height=950);
+		void addEntry(TH1* hnum, TString leg, int marker, Color_t color, float alpha=1); 
 		void histConfig(TH1* h); 
 		void padConfig(TPad* p); 
 		void Draw(TString opt=""); 
 };
 
-xStandard::xStandard(TString name, TString title = "", double width = 600,double height=500): 
+xStandard::xStandard(TString name, TString title , double width = 600,double height=500): 
 	canvasX(name, title, width, height)
 {
-	hist_vec = new std::vector<TH1*>();	
-	lg = new TLegend(0.65, 0.75, 0.85,0.85);
+	hist_vec = new std::vector<TH1*>();
+	xc->SetMargin(0.15, 0.05, 0.12, 0.075);
+	xc->SetTicks(1,1);
+	lg = new TLegend(0.65, 0.7, 0.9,0.8);
 	lg->SetFillColor(0); 
 	lg->SetBorderSize(0);
 }
 
-void xStandard::addEntry(TH1* h, int marker, Color_t color, TString leg=""){
-	TH1* htmp = (TH1*) h->Clone();
+void xStandard::addEntry(TH1* h, TString leg, int marker, Color_t color, float alpha){
+	TH1* htmp = (TH1*) h->Clone(h->GetName());
 	htmp->SetMarkerStyle(marker);
-	htmp->SetMarkerColor(color);
 	htmp->SetLineColor(color);
+	htmp->SetMarkerSize(1.5);
+	htmp->SetMarkerColorAlpha(color, alpha);
 	hist_vec->push_back(htmp);
 	lg->AddEntry(htmp, leg,"lp");
 }
@@ -66,22 +82,32 @@ void xStandard::histConfig(TH1* h ){
 	h->GetXaxis()->SetTickLength(0.04);
 	h->GetYaxis()->SetTickLength(0.04);
 	h->GetXaxis()->CenterTitle(true);
-	h->GetXaxis()->SetLabelSize(0.05);
-	h->GetYaxis()->SetLabelSize(0.05);
-	h->GetXaxis()->SetTitleSize(0.05);
+	h->GetXaxis()->SetLabelSize(0.04);
+	h->GetYaxis()->SetLabelSize(0.04);
+	h->GetXaxis()->SetTitleSize(0.045);
 	h->GetYaxis()->SetTitleSize(0.05);
+	h->GetYaxis()->SetTitleOffset(1.2);
+	h->GetXaxis()->SetTitleOffset(.9);
 }
 
 void xStandard::padConfig(TPad*p ){
 }
 
+
 void xStandard::Draw(TString opt){
 	xc->cd();
-	opt = opt+"same";
+	if(opt=="normalized")  std::cout<<"drawing with normalition to 1!"<<std::endl;
+	else	opt = opt+"same";
 	padConfig((TPad*) gPad);
+	hist_vec->at(0)->GetXaxis()->SetTitle(xtitle);
+	hist_vec->at(0)->GetYaxis()->SetTitle(ytitle);
 	for(auto &it : *hist_vec){
 		histConfig(it);
-		it->Draw(opt);
+		cout<<"drawing "<<it->GetName()<<endl;
+		if(opt == "normalized"){
+		       	it->DrawNormalized("same");
+		}
+		else it->Draw(opt);
 	}	
 	lg->Draw();
 }
@@ -96,18 +122,18 @@ void xStandard::Draw(TString opt){
 class xEfficiency: public canvasX{
 	public:
 		TString divideOpt="";
-	//	std::vector <TH1*>* hist_vec;
+		//	std::vector <TH1*>* hist_vec;
 		TH1* hframe;
 		std::vector <TGraphAsymmErrors*>* eff_vec;
 		double xMax=0, xMin=0, yMax= 1, yMin=0;
 	public:
 		xEfficiency(TString name, TString title="", double width=600, double height=500);
 		void getEff(TH1* hnum, TH1* hden, TString opt="pois",int marker=24, Color_t color=4);
-//		TAxis* getAxis(TString opt);
+		//		TAxis* getAxis(TString opt);
 		void Draw(TString opt ="apc");
 };
 xEfficiency::xEfficiency(TString name, TString title, double width, double height):
-       	canvasX(name, title,  width, height)
+	canvasX(name, title,  width, height)
 {
 	eff_vec = new vector<TGraphAsymmErrors*> ();
 	xc->SetLeftMargin(0.14);
@@ -154,7 +180,7 @@ class xRatioPlot : public canvasX{
 		std::vector<TH1*>* ratio_vec;
 		TLegend * lg;
 	public :
-		xRatioPlot(TString name, TString title="", double cwidth=600, double cheight=650);
+		xRatioPlot(TString name, TString title="", double cwidth=800, double cheight=950);
 		void addHistoPair(TString name, TH1* hnum, TH1* hden, TString opt = "");
 		void Draw(TString opt ="");
 		void histConfig(TH1* hist);
@@ -165,7 +191,7 @@ class xRatioPlot : public canvasX{
 };
 
 xRatioPlot::xRatioPlot(TString name, TString title, double cwidth, double cheight):
-       canvasX (name, title, cwidth, cheight)	
+	canvasX (name, title, cwidth, cheight)	
 {
 	hnum_vec = new std::vector<TH1*>();
 	hden_vec = new std::vector<TH1*>();
@@ -270,7 +296,7 @@ void ratioCompare(TH1* hnum, TH1* hden, TString xtitle="", TString ytitle="", TS
 	ratio->SetMarkerColor(2);
 	ratio->SetLineColor(2);
 	//------------------------------------------------------------------
-	
+
 	x_upper->cd();
 	hnum->Draw("pc"); hden->Draw("pcsame");
 	x_upper->Update();
