@@ -25,6 +25,7 @@ class mTree {
 		// Declaration of leaf types
 		Int_t           hiBin;
 		Float_t         vz;
+		vector<int>   *highPurity;
 		vector<float>   *trkPt;
 		vector<float>   *trkEta;
 		vector<float>   *trkPhi;
@@ -47,6 +48,7 @@ class mTree {
 		// List of branches
 		TBranch        *b_hiBin;   //!
 		TBranch        *b_vz;   //!
+		TBranch        *b_highPurity;   //!
 		TBranch        *b_trkPt;   //!
 		TBranch        *b_trkEta;   //!
 		TBranch        *b_trkPhi;   //!
@@ -69,7 +71,7 @@ class mTree {
 		int isMC;
 		int trackType;
 
-		mTree(TTree *tree=0, int isMC=0);
+		mTree(TTree *tree=0, int isMC=0, int isfullTrack=1);
 		virtual ~mTree();
 		virtual Int_t    Cut(Long64_t entry);
 		virtual Int_t    GetEntry(Long64_t entry);
@@ -129,6 +131,7 @@ void mTree::Init(TTree *tree)
 	// (once per file to be processed).
 
 	// Set object pointer
+	highPurity = 0;
 	trkPt = 0;
 	trkEta = 0;
 	trkPhi = 0;
@@ -160,6 +163,7 @@ void mTree::Init(TTree *tree)
 	fChain->SetBranchAddress("trkEta", &trkEta, &b_trkEta);
 	fChain->SetBranchAddress("trkPhi", &trkPhi, &b_trkPhi);
 	if(trackType){
+		fChain->SetBranchAddress("highPurity", &highPurity, &b_highPurity);
 		fChain->SetBranchAddress("trkDz", &trkDz, &b_trkDz);
 		fChain->SetBranchAddress("trkDxy", &trkDxy, &b_trkDxy);
 		fChain->SetBranchAddress("trkDzError", &trkDzError, &b_trkDzError);

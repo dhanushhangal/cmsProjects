@@ -8,6 +8,9 @@ class xthf3{
 		xthf3(TString name, int nxbin, float * xbin, int nybin, float *ybin, int nzbin, float *zbin);
 		void Fill(float x, float y, float z, float w = 1);
 		void Rebin(int nx=2, int ny=1, int nz=1);
+		void RebinZ(int nbin, float * bins);
+		void RebinZ(int n, float *bins);
+		void Write();
 		TH2F* ProjectionZ(TString name="", int ibin=0, int ebin=-1);
 	public: 
 		std::vector<TH2F*> thf3;
@@ -19,6 +22,7 @@ xthf3::xthf3(TString name, int nxbin, float * xbin, int nybin, float *ybin, int 
 	hname = name;
 	for(int jz=0; jz<nzbin; ++jz){
 		thf3.push_back(new TH2F(name+Form("_%d",jz), "", nxbin, xbin, nybin,ybin));
+		thf3.back()->Sumw2();
 	}
 	thf3.push_back(new TH2F(name+Form("_%d",nzbin), "overflow", nxbin, xbin, nybin,ybin));
 	for(int j=0; j<nzbin+1;++j) zbin.push_back(zbinConfig[j]);
@@ -69,6 +73,36 @@ TH2F* xthf3::ProjectionZ(TString name="", int ibin=0,int ebin=-1){
 	return proj;
 }
 
+void xthf3::RebinZ(int n, float *bins){
+	std::vector<int > binIndx;
+	for(int j=0; j<n+1; ++j){
+		for(int i=j; i<zbin.size(); ++i){
+			if(zbin[i]==bins[j]){
+				binIndx.push_back(i);
+				break;
+			}
+		}
+	}
+	if(binIndx.size()<n+1){
+		std::cout<<"error:binning can't be match exactly!"<<std::endl;
+		return;
+	}
+	for(int j=0; j<binIndx.size()-1; ++j){
+		thf3[j]=thf3[binIndx[j]];
+		for(int k=binIndx[j]+1; k<binIndx[j+1]; ++k){
+			thf3[j]->Add(thf3[k]);
+			delete thf3[k];
+		}
+	}
+	cout<<binIndx.size()<<endl;
+	thf3[binIndx.size()-1] = thf3[thf3.size()-1]; //overflow
+	thf3.resize(binIndx.size());
+}
+void xthf3::Write(){
+	for(auto &it: thf3){
+		it->Write();
+	}
+}
 #endif
 /*
 void th3(){
