@@ -1,11 +1,20 @@
 
+#ifndef xthf4_H
+#define xthf4_H
+
+#ifndef xAlgo_H
 #include "xAlgo.h"
+#endif
+
 #include <iomanip> // setprecision
 #include <sstream> // stringstream
 
 class xthf4 {
 	public:
 		xthf4(){ isempty = 1;}; 
+		xthf4(TString name, TString title, int nxbin, float xmin,float xmax, \
+				int nybin, float ymin, float ymax,\
+				int nzbin, float *zbin, int nwbin, float *wbin);
 		xthf4(TString name, TString title, int nxbin, float * xbin, int nybin, float *ybin,\
 				int nzbin, float *zbin, int nwbin, float *wbin);
 		int order(int i, int j, int m, int n);
@@ -20,8 +29,8 @@ class xthf4 {
 		std::vector<TH2F*> hf4;
 		std::vector<float> zbin;
 		std::vector<float> wbin;
-		std::vector<TString> ztitle;
-		std::vector<TString> wtitle;
+		std::vector<std::string> ztitle;
+		std::vector<std::string> wtitle;
 		TString hname ;
 		TString htitle ;
 		int nz, nw;// this is the total number of histo in z or w (including overflow)
@@ -29,6 +38,49 @@ class xthf4 {
 		std::stringstream stream;
 };
 
+xthf4::xthf4(TString name, TString title, int nxbin, float xmin,float xmax, \
+		int nybin, float ymin, float ymax,\
+		int nzbin, float *zbin1, int nwbin, float *wbin1):
+	nz(nzbin+1), nw(nwbin+1)
+{
+	hf4.reserve(nz*nw);
+	wtitle.reserve(nwbin+1);
+	hname = name;
+	htitle = title;
+	np=1;
+	TString temp;
+	for(int jw=0; jw<nwbin+1; ++jw){
+		stream.str("");
+		if(jw<nwbin ){
+			stream<<", "<<fixed<<setprecision(np)<<wbin1[jw]<<"<= w-axis <"<<fixed<<setprecision(np)<<wbin1[jw+1];
+		}
+		else {
+			stream<<", w-axis >= "<<fixed<<setprecision(np)<<wbin1[jw];
+		}
+		wtitle.push_back(stream.str());
+		stream.str("");
+		stream.clear();
+		for(int jz=0; jz<nzbin+1; ++jz){
+			stream.str("");
+			if( jz<nzbin) {
+				stream<<" : "<<fixed<<setprecision(np)<<zbin1[jz]<<"<= z-aixs<"
+					<<fixed<<setprecision(np)<<zbin1[jz+1];
+			}
+			else{
+				stream<<" : z-aixs >= "<<fixed<<setprecision(np)<<zbin1[jz];
+			}
+			ztitle.push_back(stream.str());
+			temp = title+ztitle[jz]+wtitle[jw];
+		temp = "";
+			hf4.push_back(new TH2F(name+Form("_%d_%d",jz,jw), temp,
+					       	nxbin, xmin, xmax, 
+						nybin, ymin, ymax));
+			hf4.back()->Sumw2();
+		}
+	}
+	for(int j=0; j<nzbin+1;++j) zbin.push_back(zbin1[j]);
+	for(int j=0; j<nwbin+1;++j) wbin.push_back(wbin1[j]);
+}
 
 xthf4::xthf4(TString name,TString title, int nxbin, float * xbin, int nybin, float *ybin,\
 		int nzbin, float *zbin1, int nwbin, float *wbin1):
@@ -52,10 +104,10 @@ xthf4::xthf4(TString name,TString title, int nxbin, float * xbin, int nybin, flo
 			stream.str("");
 			if( jz<nzbin) {
 				stream<<" : "<<fixed<<setprecision(np)<<zbin1[jz]<<"<= z-aixs<"
-				<<fixed<<setprecision(np)<<zbin1[jz+1];
+					<<fixed<<setprecision(np)<<zbin1[jz+1];
 			}
 			else{
-			       	stream<<" : z-aixs >= "<<fixed<<setprecision(np)<<zbin1[jz];
+				stream<<" : z-aixs >= "<<fixed<<setprecision(np)<<zbin1[jz];
 			}
 			ztitle.push_back(stream.str());
 			temp = title+ztitle[jz]+wtitle[jw];
@@ -97,11 +149,11 @@ void xthf4::RebinZ(int n, float *bins){
 			htmp[order(j,l,n+1, nw)]->SetName(hname+Form("_%d_%d",j, l));
 			stream.str("");
 			if(j<n){
-			       	stream<<" : "<<fixed<<setprecision(np)<<bins[j]<<"<= z-aixs<"
-				<<fixed<<setprecision(np)<<bins[j+1];
+				stream<<" : "<<fixed<<setprecision(np)<<bins[j]<<"<= z-aixs<"
+					<<fixed<<setprecision(np)<<bins[j+1];
 			}
 			else {
-			       	stream<<" : z-aixs>= "<<fixed<<setprecision(np)<<bins[j];
+				stream<<" : z-aixs>= "<<fixed<<setprecision(np)<<bins[j];
 			}
 			ztitle.push_back(stream.str());
 			temp = htitle+ztitle[j]+wtitle[l];
@@ -146,11 +198,11 @@ void xthf4::RebinW(int n, float *bins){
 			htmp[order(l,j,nz, n+1)]->SetName(hname+Form("_%d_%d",l, j));
 			stream.str("");
 			if(j<n){
-			       	stream<<", "<<fixed<<setprecision(np)<<bins[j]<<"<= w-aixs<"
-				<<fixed<<setprecision(np)<<bins[j+1];
+				stream<<", "<<fixed<<setprecision(np)<<bins[j]<<"<= w-aixs<"
+					<<fixed<<setprecision(np)<<bins[j+1];
 			}
 			else {
-			       	stream<<", w-aixs>= "<<fixed<<setprecision(np)<<bins[j];
+				stream<<", w-aixs>= "<<fixed<<setprecision(np)<<bins[j];
 			}
 			wtitle.push_back(stream.str());
 			temp = htitle+ztitle[l]+wtitle[j];
@@ -208,23 +260,25 @@ int xthf4::Read(TString name, TFile *f , int nz1, float *zbin1, int nw1, float *
 	return nn;
 }
 
+#endif
+
 /*
-void h4(){
-	float bin[] = {0,1,2,3,4,5};
-	float zbin[] = {0,2,4,5, 6};
-	float newzbin[] = {0,2,5, 6};
-	TFile* f = TFile::Open("test.root");
-	auto a = new xthf4();
-	a->Read("test",f, 3, newzbin, 4, zbin);
-	//a->hist(1,2)->Draw("colz");
-	TFile* wf = TFile::Open("test.root","recreate");
-	xthf4* a = new xthf4("gen","tracks", 5, bin, 5, bin ,4, zbin, 4, zbin);
-	xthf4* b = new xthf4("rec","tracks", 5, bin, 5, bin ,4, zbin, 4, zbin);
-	a->Fill(3,2,7.4, 10);
-	a->Fill(3,2,4, 4);
-	a->Fill(3,2,3, 4);
-	a->RebinZ(3,newzbin);
-	a->Write();
-	b->Write();
+   void h4(){
+   float bin[] = {0,1,2,3,4,5};
+   float zbin[] = {0,2,4,5, 6};
+   float newzbin[] = {0,2,5, 6};
+   TFile* f = TFile::Open("test.root");
+   auto a = new xthf4();
+   a->Read("test",f, 3, newzbin, 4, zbin);
+//a->hist(1,2)->Draw("colz");
+TFile* wf = TFile::Open("test.root","recreate");
+xthf4* a = new xthf4("gen","tracks", 5, bin, 5, bin ,4, zbin, 4, zbin);
+xthf4* b = new xthf4("rec","tracks", 5, bin, 5, bin ,4, zbin, 4, zbin);
+a->Fill(3,2,7.4, 10);
+a->Fill(3,2,4, 4);
+a->Fill(3,2,3, 4);
+a->RebinZ(3,newzbin);
+a->Write();
+b->Write();
 }
 */
