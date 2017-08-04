@@ -1,9 +1,9 @@
 
 
 #define config_H
-#include "../TMath.h"
-#include "../inputTree.h"
-#include "../xthf4.h"
+#include "TMath.h"
+#include "inputTree.h"
+#include "xthf4.h"
 #include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
 
 namespace jetTrack{
@@ -26,12 +26,10 @@ namespace jetTrack{
 	}
 
 	namespace trackingClosureConfig{
-		int ntrkpt = 4;
-		float trkpt[5]= {0.7, 12, 16,20,999};
+		int ntrkpt = 9;
+		float trkpt[10]= {0.7, 1, 2, 3, 4, 8, 12, 16,20,999};
 		int ncent = 50; 
-//		float cent[4] = {0, 20, 60, 100, 200}; 
-		float cent[51];
-		for(int i=0;i<ncent+1;++i) cent[i] = i*4;	
+		float cent[51];// initiation in load()
 		int neta= 100;
 		int nphi= 72;
 		float etamin = -5, etamax =5;
@@ -59,6 +57,7 @@ namespace jetTrack{
 	void loadConfig(){
 		weight::fvz->SetParameters(1.18472,-0.132675,0.00857998,-0.000326085,-1.48786e-06,4.68665e-07,-7.32942e-09 );	
 		weight::fcent1->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15);
+		for(int i=0;i<trackingClosureConfig::ncent+1;++i) trackingClosureConfig::cent[i] = i*4;	
 	}
 
 	bool trackQualityCuts(inputTree * t , int j){
@@ -83,7 +82,8 @@ namespace jetTrack{
 		return 0;
 	}
 	bool genParticleCuts(inputTree *t,int j){
-	return 0;
+		if (t->chg->at(j)==0) return 1;
+		return 0;
 	}
 }
 
