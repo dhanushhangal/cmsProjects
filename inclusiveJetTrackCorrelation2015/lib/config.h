@@ -7,6 +7,9 @@
 #include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
 
 namespace jetTrack{
+	namespace ioconfig{
+		TString trackingOutput = "../hist/";
+	}
 	namespace weight {
 		TF1* fvz   = new TF1("fvz","pol6",-15,15);
 		TF1* fcent1= new TF1("fcent1","[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)",0,180);
@@ -27,37 +30,50 @@ namespace jetTrack{
 
 	namespace trackingClosureConfig{
 		int ntrkpt = 9;
-		float trkpt[10]= {0.7, 1, 2, 3, 4, 8, 12, 16,20,999};
+		float trkpt_c[10]= {0.7, 1, 2, 3, 4, 8, 12, 16,20,999};
 		int ncent = 50; 
 		float cent[51];// initiation in load()
 		int neta= 100;
 		int nphi= 72;
 		float etamin = -5, etamax =5;
 		float phimin = -TMath::Pi(), phimax = TMath::Pi() ;
+		float* trkpt = trkpt_c;
 	}
 
 	namespace trackingCorrConfig{
-		int ntrkpt = 9;
-		float trkpt[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
-		int ncent = 4; 
-		float cent[5] = {0, 20, 60, 100, 200}; 
+		int ntrkpt_in = 9;
+		float trkpt_in_c[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
+		int ntrkpt_out = 9;
+		float trkpt_out_c[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
+		int ncent_in = 50; 
+		int cent_in_c[51]; 
+		int ncent_out = 4; 
+		int cent_out_c[5] = {0, 20, 60, 100, 200}; 
+
 		int neta= 100;
 		int nphi= 72;
 		float etamin = -5, etamax =5;
 		float phimin = -TMath::Pi(), phimax = TMath::Pi() ;
+		float * cent_in = cent_in_c;
+		float * cent_out = cent_out_c;
+		float* trkpt_in= trkpt_in_c;
+		float *trkpt_out = trkpt_out_c;
 	}
 
 	namespace anaConfig{
 		int ntrkpt = 9;
-		float trkpt[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
+		float trkpt_c[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
 		int ncent = 4; 
 		float cent[5] = {0, 20, 60, 100, 200}; 
+		float *trkpt= trkpt_c;
 	}
 
 	void loadConfig(){
 		weight::fvz->SetParameters(1.18472,-0.132675,0.00857998,-0.000326085,-1.48786e-06,4.68665e-07,-7.32942e-09 );	
 		weight::fcent1->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15);
+		/* initiate the cent bin for tracking */
 		for(int i=0;i<trackingClosureConfig::ncent+1;++i) trackingClosureConfig::cent[i] = i*4;	
+		for(int i=0;i<trackingCorrConfig::ncent_in+1;++i) trackingCorrConfig::cent_in_c[i] = i*4;	
 	}
 
 	bool trackQualityCuts(inputTree * t , int j){

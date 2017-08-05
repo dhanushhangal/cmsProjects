@@ -60,7 +60,7 @@ class trackingClosure  {
 		void Read();
 		void DrawClosure(TString name="", TString type= "");
 		TPad* ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2, 
-				float xmin, float xmax,float ymin,float ymax, bool doLegend);
+				float xmin, float xmax,float ymin,float ymax, bool doLegend, bool dofit=0);
 		~trackingClosure();
 
 	public: 
@@ -75,6 +75,7 @@ class trackingClosure  {
 		xthf4 * rec;
 		xthf4 * cre;
 		bool isread;
+		std::vector<TH1F*> ratioVec;
 };
 
 void trackingClosure::runScan(){
@@ -126,6 +127,8 @@ trackingClosure::~trackingClosure(){
 	delete gen;
 	delete rec; 
 	delete cre; 
+	for(auto &it : ratioVec) delete it;
+	ratioVec.clear();
 }
 
 void trackingClosure::DrawClosure(TString name="", TString type= ""){
@@ -134,10 +137,13 @@ void trackingClosure::DrawClosure(TString name="", TString type= ""){
 	int ana_ncent=anaConfig::ncent;
 	float* ana_trkpt = anaConfig::trkpt;
 	float* ana_cent = anaConfig::cent;
+	ratioVec.reserve(ana_ntrkpt*ana_ncent);
 	TCanvas * c[ana_ntrkpt][ana_ncent];
 	TH1F *hgen, *hrec, *hcre;
 	TLine *ll = new TLine();
 	ll->SetLineStyle(8);
+	float fitRange0 = xmin, fitRange1 = xmax;
+	TF1* p0 = new TF1("p0", "pol0", fitRange0, fitRange1);
 	for(int i=0;i<ana_ntrkpt ; ++i){
 		c[i][0]= new TCanvas(Form("c_%d_0",i),"", 1200,600);
 		c[i][0]->Divide(4,1,0,0);
@@ -150,18 +156,60 @@ void trackingClosure::DrawClosure(TString name="", TString type= ""){
 			hrec->Rebin();
 			hcre->Rebin();
 			hgen->SetAxisRange(xmin, xmax , "X");
+			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !j, 1);
+			ll->DrawLine(xmin, 1, xmax,1);
+			ll->DrawLine(xmin, 1.05, xmax,1.05);
+			ll->DrawLine(xmin, .95, xmax,.95);
+		}		
+		if(name !="") c[i][0]->SaveAs(name+Form("_trkClosure_eta_%d",i)+type);
+	}
+	for(int i=0;i<ana_ntrkpt ; ++i){
+		c[i][1]= new TCanvas(Form("c_%d_1",i),"", 1200,600);
+		c[i][1]->Divide(4,1,0,0);
+		for(int j=0;j<ana_ncent; ++j){
+			c[i][1]->cd(ana_ncent-j);
+			hgen= (TH1F*)gen->hist(i,j)->ProjectionY();	
+			hrec= (TH1F*)rec->hist(i,j)->ProjectionY();	
+			hcre= (TH1F*)cre->hist(i,j)->ProjectionY();	
+			hgen->Rebin();
+			hrec->Rebin();
+			hcre->Rebin();
+			hgen->SetAxisRange(xmin, xmax , "X");
 			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !j);
 			ll->DrawLine(xmin, 1, xmax,1);
 			ll->DrawLine(xmin, 1.05, xmax,1.05);
 			ll->DrawLine(xmin, .95, xmax,.95);
 		}		
+		if(name !="") c[i][1]->SaveAs(name+Form("_trkClosure_phi_%d",i)+type);
 	}
+
+	TH1F* closure[4];
+	if( name =="" || ana_ncent>4) return;
+	TCanvas *cpt = new TCanvas("cpt", "", 1200,340);
+	cpt->Divide(ana_ncent,1,0,0);
+	for(int ic=0; ic<ana_ncent; ++ic){
+		cpt->cd(ana_ncent-ic);
+		std::stringstream stream;
+		stream<<"cent : "<<fixed<<setprecision(0)<<ana_cent[ic]/2<<"-"<<fixed<<setprecision(0)<<ana_cent[ic+1]/2<<"%";
+		TString title = stream.str();
+		closure[ic]= new TH1F(Form("closure_pt_%d",ic),title , ana_ntrkpt, ana_trkpt);
+		for(int i=0;i<ana_ntrkpt;++i){
+			cout<<i+ic*ana_ncent<<endl;
+			ratioVec.at(i+ic*ana_ncent)->Fit(p0, "", "", fitRange0, fitRange1);
+			closure[ic]->SetBinContent(i+1, p0->GetParameter(0));
+			closure[ic]->SetBinError(i+1, p0->GetParError(0));
+		}
+		closure[ic]->Draw();
+		gPad->SetLogx();
+	}
+	cpt->SaveAs(name+"_closure_pt"+type);
+	return;
 }
 
 TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2, 
-		float xmin, float xmax,float ymin,float ymax, bool doLegend)
+		float xmin, float xmax,float ymin,float ymax, bool doLegend, bool dofit)
 {
-	TH1* hratio1, *hratio2;
+	TH1F* hratio1, *hratio2;
 	hden->SetAxisRange(0, 1.8*hden->GetMaximum(), "y");
 	hden->SetMarkerSize(1.4);
 	hden->SetMarkerStyle(21);
@@ -177,7 +225,7 @@ TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2,
 	hnum1->GetXaxis()->SetTitleOffset(0.8);
 	hnum1->GetXaxis()->CenterTitle();
 	hnum1->GetXaxis()->SetTitleSize(0.06);
-	hratio1=(TH1*)hnum1->Clone();
+	hratio1=(TH1F*)hnum1->Clone();
 	hden->SetAxisRange(xmin, xmax, "X");
 	hratio1->SetAxisRange(xmin, xmax, "X");
 	hratio1->Divide(hnum1, hden, 1, 1, "B");
@@ -185,7 +233,7 @@ TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2,
 	hnum2->SetMarkerStyle(20);
 	hnum2->SetTitle("");
 	hnum2->SetMarkerColor(kBlue-3);
-	hratio2=(TH1*)hnum2->Clone();
+	hratio2=(TH1F*)hnum2->Clone();
 	hratio2->Divide(hnum2, hden, 1 ,1, "B");
 	TPad* pad = (TPad*) gPad;
 	pad->Divide(1, 2, 0,0);
@@ -218,8 +266,8 @@ TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2,
 		ltemp2->AddEntry(hratio2, "corr.Tracks/gen.Particles");
 		ltemp2->Draw();
 	}
+	ratioVec.push_back(hratio1);
 	return (TPad*)pad;
-//	ratioVec.push_back(hratio1);
 }
 
 #endif
