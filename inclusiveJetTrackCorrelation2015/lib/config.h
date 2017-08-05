@@ -41,14 +41,14 @@ namespace jetTrack{
 	}
 
 	namespace trackingCorrConfig{
-		int ntrkpt_in = 9;
-		float trkpt_in_c[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
-		int ntrkpt_out = 9;
-		float trkpt_out_c[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
+		int ntrkpt_in = 11;
+		float trkpt_in_c[12]= {0.7,0.8, 0.9, 1, 2, 3, 4, 8, 12, 16,20,999};
+		int ntrkpt_out = 11;
+		float trkpt_out_c[12]= {0.7,0.8, 0.9,1, 2, 3, 4, 8, 12, 16,20,999};
 		int ncent_in = 50; 
-		int cent_in_c[51]; 
+		float cent_in_c[51]; 
 		int ncent_out = 4; 
-		int cent_out_c[5] = {0, 20, 60, 100, 200}; 
+		float cent_out_c[5] = {0, 20, 60, 100, 200}; 
 
 		int neta= 100;
 		int nphi= 72;
