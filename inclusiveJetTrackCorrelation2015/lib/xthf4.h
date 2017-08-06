@@ -74,18 +74,15 @@ TH2F* xthf4::hist ( int i, int j){
 	return hf4[i+j*nz];
 }
 void xthf4::RebinZ(int n, float *bins){
-	std::vector<int > binIndx;
 	for(int j=0; j<n+1; ++j){
 		for(int i=j; i<zbin.size(); ++i){
 			if(zbin[i]==bins[j]){
 				binIndx.push_back(i);
 				break;
 			}
+			std::cout<<"error:binning can't be match exactly!"<<std::endl;
+			return ;
 		}
-	}
-	if(binIndx.size()<n+1){
-		std::cout<<"error:binning can't be match exactly!"<<std::endl;
-		return;
 	}
 	TString temp;
 	ztitle.clear();
@@ -111,18 +108,15 @@ void xthf4::RebinZ(int n, float *bins){
 }
 
 void xthf4::RebinW(int n, float *bins){
-	std::vector<int > binIndx;
 	for(int j=0; j<n+1; ++j){
 		for(int i=j; i<wbin.size(); ++i){
 			if(wbin[i]==bins[j]){
 				binIndx.push_back(i);
 				break;
 			}
-		}
-	}
-	if(binIndx.size()<n+1){
+			return;
 		std::cout<<"error:binning can't be match exactly!"<<std::endl;
-		return;
+		}
 	}
 	TString temp;
 	wtitle.clear();
