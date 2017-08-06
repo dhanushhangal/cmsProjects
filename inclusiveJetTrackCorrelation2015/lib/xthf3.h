@@ -70,6 +70,7 @@ void xthf3::createHist(int nxbin, float xmin,float xmax,int nybin, float ymin, f
 	}
 }
 void xthf3::RebinZ(int n, float *bins){
+	float* binIndx = new float[n+1];
 	if( bins[0] != zbin[0] ){
 		std::cout<<"error: rebin should have the same start point!"<<std::endl;
 		return;
@@ -77,6 +78,7 @@ void xthf3::RebinZ(int n, float *bins){
 	for(int j=0; j<n+1; ++j){
 		for(int i=j; i<nhist; ++i){
 			if(zbin[i]==bins[j]){
+				binIndx[j]=i;
 				break;
 			}
 			std::cout<<"new bins can't be fit into the origin one!"<<std::endl;
@@ -88,23 +90,24 @@ void xthf3::RebinZ(int n, float *bins){
 	ztitle_setup(n, bins);
 	TH2F ** hfnew = new TH2F*[n+1];
 	for(int j=0; j<n; ++j){
-		hfnew[j]=hf4[bins[j]];
+		hfnew[j]=hf4[binIndx[j]];
 		hfnew[j]->SetName(hname+Form("_%d",j));
 		temp = htitle+ztitle[j];
 		hfnew[j]->SetTitle(temp);
-		for(int k=bins[j]+1; k<bins[j+1]; ++k){
+		for(int k=binIndx[j]+1; k<binIndx[j+1]; ++k){
 			hfnew[j]->Add(hf3[k]);
 			delete hf3[k];
 		}
 	}
-	hfnew[n] = hf3[bins[n]];//overflow
+	hfnew[n] = hf3[binIndx[n]];//overflow
 	hfnew[n]->SetName(hname+Form("_%d", n));
 	//sum all the rest into over flow;
-	for(int j=bins[n]+1; j<nhist; ++j){
+	for(int j=binIndx[n]+1; j<nhist; ++j){
 		hfnew[n] ->Add(hf3[j]); 
 		delete hf3[j];
 	}
 	delete [] hf3;
+	delete [] binIndx;
 	hf3 = hfnew;
 	nhist=n+1;
 }
