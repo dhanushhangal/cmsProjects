@@ -11,6 +11,7 @@
 #include "xthf4.h"
 #endif
 
+
 #ifndef trackingClosure_H
 #define trackingClosure_H
 using namespace jetTrack;
@@ -49,11 +50,22 @@ class trackingClosure  {
 			trkpt(trackingClosureConfig::trkpt),
 			cent(trackingClosureConfig::cent)
 	{
+		int   npt  = trackingClosureConfig::npt;
+		float ptmin= trackingClosureConfig::ptmin;
+		float ptmax= trackingClosureConfig::ptmax;
+		int   ncent_pt   =trackingClosureConfig::ncent_pt;
+		Double_t* cent_pt=trackingClosureConfig::cent_pt;
 		f=NULL;
 		isread = 0;
 		gen = new xthf4("gen","gen", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
 		rec = new xthf4("rec","rec", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
 		cre = new xthf4("cre","cre", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
+		genpt= new TH2F("genpt", "gen pt distriubtion"        ,npt, ptmin, ptmax, ncent_pt, cent_pt);
+		recpt= new TH2F("recpt", "track pt distriubtion"      ,npt, ptmin, ptmax, ncent_pt, cent_pt);
+		crept= new TH2F("crept", "corr. track pt distriubtion",npt, ptmin, ptmax, ncent_pt, cent_pt);
+		genpt->Sumw2();
+		recpt->Sumw2();
+		crept->Sumw2();
 	};
 
 		void runScan();
@@ -74,6 +86,9 @@ class trackingClosure  {
 		xthf4 * gen;
 		xthf4 * rec;
 		xthf4 * cre;
+		TH2F * genpt;
+		TH2F * recpt;
+		TH2F * crept;
 		bool isread;
 		std::vector<TH1F*> ratioVec;
 };
@@ -92,15 +107,21 @@ void trackingClosure::runScan(){
 			float trkcorr = correction::trk_corr(t, j);
 			rec->Fill(t->trkEta->at(j), t->trkPhi->at(j), t->trkPt->at(j), t->hiBin, w_vz);
 			cre->Fill(t->trkEta->at(j), t->trkPhi->at(j), t->trkPt->at(j), t->hiBin, w_vz*trkcorr);
+			recpt->Fill(t->trkPt->at(j), t->hiBin, w_vz);
+			crept->Fill(t->trkPt->at(j), t->hiBin, w_vz*trkcorr);
 		}
 		for(int j=0;j<t->pt->size(); ++j){
 			if(genParticleCuts(t,j))continue;
 			gen->Fill(t->eta->at(j), t->phi->at(j), t->pt->at(j), t->hiBin, w_vz);
+			genpt->Fill(t->pt->at(j), t->hiBin, w_vz);
 		}
 	}
 	gen->Write();
 	rec->Write();
 	cre->Write();
+	genpt->Write();
+	recpt->Write();
+	crept->Write();
 }
 
 void trackingClosure::Read(){
@@ -121,6 +142,9 @@ void trackingClosure::Read(){
 	gen->RebinW(ana_ncent, ana_cent);
 	rec->RebinW(ana_ncent, ana_cent);
 	cre->RebinW(ana_ncent, ana_cent);
+	genpt = (TH2F*) f->Get("genpt");
+	recpt = (TH2F*) f->Get("recpt");
+	crept = (TH2F*) f->Get("crept");
 }
 
 trackingClosure::~trackingClosure(){

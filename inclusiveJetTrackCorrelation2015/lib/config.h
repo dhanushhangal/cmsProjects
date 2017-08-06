@@ -35,9 +35,14 @@ namespace jetTrack{
 		float cent[51];// initiation in load()
 		int neta= 100;
 		int nphi= 72;
+		int npt = 3993;
+		float ptmin = 0.7;
+		float ptmax = 400;
 		float etamin = -5, etamax =5;
 		float phimin = -TMath::Pi(), phimax = TMath::Pi() ;
 		float* trkpt = trkpt_c;
+		int ncent_pt = 4;
+		Double_t cent_pt[5] = {0, 20, 60, 100, 200};
 	}
 
 	namespace trackingCorrConfig{

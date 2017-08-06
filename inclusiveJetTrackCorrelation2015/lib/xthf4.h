@@ -74,6 +74,7 @@ TH2F* xthf4::hist ( int i, int j){
 	return hf4[i+j*nz];
 }
 void xthf4::RebinZ(int n, float *bins){
+	std::vector<int > binIndx;
 	for(int j=0; j<n+1; ++j){
 		for(int i=j; i<zbin.size(); ++i){
 			if(zbin[i]==bins[j]){
@@ -89,7 +90,7 @@ void xthf4::RebinZ(int n, float *bins){
 	ztitle_setup(n, bins);
 	TH2F ** hfnew = new TH2F*[nw*(n+1)];
 	for(int l=0; l<nw; ++l){
-		for(int j=0; j<binIndx.size()-1; ++j){
+		for(int j=0; j<n; ++j){
 			hfnew[j+l*(n+1)]=hf4[binIndx[j]+l*nz];
 			hfnew[j+l*(n+1)]->SetName(hname+Form("_%d_%d",j, l));
 			temp = htitle+ztitle[j]+wtitle[l];
@@ -99,8 +100,8 @@ void xthf4::RebinZ(int n, float *bins){
 				delete hf4[k+l*nz];
 			}
 		}
-		hfnew[binIndx.size()-1+l*(n+1)] = hf4[nz-1+l*nz];//overflow
-		hfnew[binIndx.size()-1+l*(n+1)]->SetName(hname+Form("_%d_%d", int(binIndx.size()-1), l));
+		hfnew[n+l*(n+1)] = hf4[nz-1+l*nz];//overflow
+		hfnew[n+l*(n+1)]->SetName(hname+Form("_%d_%d", n, l));
 	}
 	delete [] hf4;
 	hf4 = hfnew;
@@ -108,6 +109,7 @@ void xthf4::RebinZ(int n, float *bins){
 }
 
 void xthf4::RebinW(int n, float *bins){
+	std::vector<int > binIndx;
 	for(int j=0; j<n+1; ++j){
 		for(int i=j; i<wbin.size(); ++i){
 			if(wbin[i]==bins[j]){
@@ -123,7 +125,7 @@ void xthf4::RebinW(int n, float *bins){
 	wtitle_setup(n, bins);
 	TH2F ** hfnew = new TH2F*[nz*(n+1)];
 	for(int l=0; l<nz; ++l){
-		for(int j=0; j<binIndx.size()-1; ++j){
+		for(int j=0; j<n; ++j){
 			hfnew[l+j*nz] = hf4[l+binIndx[j]*nz ];
 			hfnew[l+j*nz]->SetName(hname+Form("_%d_%d",l, j));
 			temp = htitle+ztitle[l]+wtitle[j];
@@ -133,8 +135,8 @@ void xthf4::RebinW(int n, float *bins){
 				delete hf4[l+k*nz];
 			}
 		}
-		hfnew[l+(binIndx.size()-1)*nz] = hf4[l+(nw-1)*nz];//overflow
-		hfnew[l+(binIndx.size()-1)*nz]->SetName(hname+Form("_%d_%d", l, int(binIndx.size()-1)));
+		hfnew[l+n*nz] = hf4[l+(nw-1)*nz];//overflow
+		hfnew[l+n*nz]->SetName(hname+Form("_%d_%d", l, n));
 	}
 	delete [] hf4;
 	hf4 = hfnew;
@@ -204,7 +206,7 @@ void xthf4::wtitle_setup(int nwbin, float *wbin1){
 
 void xthf4::ztitle_setup(int nzbin, float *zbin1){
 	zbin.clear();
-	for(int j=0; j<nzbin+1;++j) zbin.push_back(zbin1[j]);
+	for(int j=0; j<nzbin+1;++j) zbin.push_back(float(zbin1[j]));
 	for(int jz=0; jz<nzbin+1; ++jz){
 		stream.str("");
 		if( jz<nzbin) {

@@ -22,6 +22,8 @@ class xthf3 {
 		void createHist(int nxbin, float xmin,float xmax,int nybin, float ymin, float ymax);
 		void ztitle_setup();
 		void RebinZ(int nbin, float *bins);
+		int Fill(float x, float y, float z, float wit = 1);
+		TH2F* hist(int z);
 	public :
 		TH2F** hf3;
 		float *zbin;
@@ -41,13 +43,13 @@ xthf3::xthf3(TString name, TString title, int nxbin, float xmin,float xmax,int n
 	zbin = new float[nhist];
 	zbin[nhist-1] = zmax;
 	float binwidth  = (zmax-zmin)/nzbin;
-	for(int i=0;i<nhist-1;++i) zbin[i]= i*binwidth;	
 	ztitle_setup();
 	createHist(nxbin, xmin, xmax, nybin, ymin,ymax);
 }
 
 void xthf3::ztitle_setup(){
 	TString stmp;
+	for(int i=0;i<nhist-1;++i) zbin[i]= i*binwidth;	
 	for(int i=0;i<nhist;++i){
 		stream.str("");
 		if( i<nhist) {
@@ -70,7 +72,7 @@ void xthf3::createHist(int nxbin, float xmin,float xmax,int nybin, float ymin, f
 void xthf3::RebinZ(int n, float *bins){
 	if( bins[0] != zbin[0] ){
 		std::cout<<"error: rebin should have the same start point!"<<std::endl;
-	       	return;
+		return;
 	}
 	for(int j=0; j<n+1; ++j){
 		for(int i=j; i<nhist; ++i){
@@ -105,4 +107,21 @@ void xthf3::RebinZ(int n, float *bins){
 	delete [] hf3;
 	hf3 = hfnew;
 	nhist=n+1;
+}
+int xthf3::Fill(float x, float y, float z, float wit = 1){
+	int jz = xAlgo::binarySearch(z, zbin, nhist-1, 0); 
+	if(jz <0) jz = nhist-1;
+	hist(jz)->Fill(x,y,wit); 
+	if(jz== hist-1 ) return 1;
+	else return 0;
+}
+
+TH2F* xthf3::hist(int z){
+	if(z<nhist){
+		return hf3[z];
+	}
+	else{
+		std::cout<<"hist out of the range!"<<std::endl;
+		return NULL;
+	}
 }
