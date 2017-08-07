@@ -5,7 +5,7 @@
 #include "inputTree.h"
 #include "dataTree.h"
 #include "xthf4.h"
-//#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
+#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
 
 namespace jetTrack{
 	namespace ioconfig{
@@ -22,12 +22,15 @@ namespace jetTrack{
 		}
 	}
 
-//	namespace correction{
-//		auto trkc = new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
-//		float trk_corr(inputTree *t, int j ){
-//			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
-//		}
-//	}
+	namespace correction{
+		auto trkc = new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
+		float trk_corr(inputTree *t, int j ){
+			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
+		}
+		float trk_corr(dataTree *t, int j ){
+			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
+		}
+	}
 
 	namespace trackingClosureConfig{
 		int ntrkpt = 9;

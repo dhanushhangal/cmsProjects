@@ -100,22 +100,27 @@ void trackingClosure::runScan(){
 		if(jentry %1000 == 0) std::cout<<"processing "<<jentry<<"th event.."<<std::endl;
 		t->GetEntry(jentry);
 		float w_vz=1;
+		float w_cent=1;
 		if(eventCuts(t)) continue;
 		w_vz = weight::vz_weight(t->vz);
+		w_cent = weight::cent_weight(t->hiBin);
 		for(int j=0;j<t->trkPt->size(); ++j){
 			if(trackQualityCuts(t,j))continue;
 			float trkcorr = correction::trk_corr(t, j);
 			rec->Fill(t->trkEta->at(j), t->trkPhi->at(j), t->trkPt->at(j), t->hiBin, w_vz);
 			cre->Fill(t->trkEta->at(j), t->trkPhi->at(j), t->trkPt->at(j), t->hiBin, w_vz*trkcorr);
-			recpt->Fill(t->trkPt->at(j), t->hiBin, w_vz);
-			crept->Fill(t->trkPt->at(j), t->hiBin, w_vz*trkcorr);
+			recpt->Fill(t->trkPt->at(j), t->hiBin, w_cent*w_vz);
+			crept->Fill(t->trkPt->at(j), t->hiBin, w_cent*w_vz*trkcorr);
 		}
 		for(int j=0;j<t->pt->size(); ++j){
 			if(genParticleCuts(t,j))continue;
 			gen->Fill(t->eta->at(j), t->phi->at(j), t->pt->at(j), t->hiBin, w_vz);
-			genpt->Fill(t->pt->at(j), t->hiBin, w_vz);
+			genpt->Fill(t->pt->at(j), t->hiBin, w_cent*w_vz);
 		}
 	}
+	genpt->Scale(1.0/nentries);
+	recpt->Scale(1.0/nentries);
+	crept->Scale(1.0/nentries);
 	gen->Write();
 	rec->Write();
 	cre->Write();
