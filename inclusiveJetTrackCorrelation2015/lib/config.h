@@ -82,15 +82,22 @@ namespace jetTrack{
 	}
 
 	bool trackQualityCuts(inputTree * t , int j){
-		if (!t->highPurity->at(j)) return 1;
-		float Et = (t->pfHcal->at(j)+t->pfEcal->at(j))/TMath::CosH(t->trkEta->at(j));
-		if (!(t->trkPt->at(j)<20 || (Et>0.5*t->trkPt->at(j)))) return 1;
-		if ( TMath::Abs(t->trkDz->at(j)/t->trkDzError->at(j)) >=3) return 1;
-		if ( TMath::Abs(t->trkDxy->at(j)/t->trkDxyError->at(j)) >=3) return 1;
-		if ( t->trkPtError->at(j)/t->trkPt->at(j)>=0.1) return 1;
-		if ( t->trkPtError->at(j)/t->trkPt->at(j)>=0.3) return 1;
-		if ( t->trkNHit->at(j)< 11) return 1;
-		if ((float)t->trkChi2->at(j)/(float)t->trkNdof->at(j)/(float)t->trkNlayer->at(j)>0.15) return 1;
+		return trackQualityCutsImp(t->highPurity->at(j), t->pfHcal->at(j), t->pfEcal->at(j),
+			t->trkPt->at(j), t->trkPtError->at(j), t->trkEta->at(j), t->trkDz->at(j), t->trkDzError->at(j),
+			t->trkDxy->at(j), t->trkDxyError->at(j), t->trkNHit->at(j), t->trkChi2->at(j),
+			t->trkNdof->at(j), t->trkNlayer->at(j));
+	}
+
+	bool trackQualityCutsImp (int highPurity, float pfHcal, float pfEcal, float trkPt, float trkPtError, float trkEta, float trkDz, float trkDzError, float trkDxy, float trkDxyError, int trkNHit, float trkChi2, int trkNdof, int trkNlayer){
+		if (!highPurity) return 1;
+		float Et = (pfHcal+pfEcal)/TMath::CosH(trkEta);
+		if (!(trkPt<20 || (Et>0.5*trkPt))) return 1;
+		if ( TMath::Abs(trkDz/trkDzError) >=3) return 1;
+		if ( TMath::Abs(trkDxy/trkDxyError) >=3) return 1;
+		if ( trkPtError/trkPt>=0.1) return 1;
+		if ( trkPtError/trkPt>=0.3) return 1;
+		if ( trkNHit< 11) return 1;
+		if (float(trkChi2)/float(trkNdof)/float(trkNlayer)>0.15) return 1;
 		return 0;
 	}
 
