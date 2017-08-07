@@ -3,8 +3,9 @@
 #define config_H
 #include "TMath.h"
 #include "inputTree.h"
+#include "dataTree.h"
 #include "xthf4.h"
-#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
+//#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
 
 namespace jetTrack{
 	namespace ioconfig{
@@ -14,19 +15,19 @@ namespace jetTrack{
 		TF1* fvz   = new TF1("fvz","pol6",-15,15);
 		TF1* fcent1= new TF1("fcent1","[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)",0,180);
 		float cent_weight(int hiBin ){
-			     return (hiBin < 194) ? fcent1->Eval(hiBin) : 1;
+			return (hiBin < 194) ? fcent1->Eval(hiBin) : 1;
 		}
 		float vz_weight(float vz){
 			return fvz->Eval(vz);
 		}
 	}
 
-	namespace correction{
-		auto trkc = new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
-		float trk_corr(inputTree *t, int j ){
-			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
-		}
-	}
+//	namespace correction{
+//		auto trkc = new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
+//		float trk_corr(inputTree *t, int j ){
+//			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
+//		}
+//	}
 
 	namespace trackingClosureConfig{
 		int ntrkpt = 9;
@@ -81,12 +82,6 @@ namespace jetTrack{
 		for(int i=0;i<trackingCorrConfig::ncent_in+1;++i) trackingCorrConfig::cent_in_c[i] = i*4;	
 	}
 
-	bool trackQualityCuts(inputTree * t , int j){
-		return trackQualityCutsImp(t->highPurity->at(j), t->pfHcal->at(j), t->pfEcal->at(j),
-			t->trkPt->at(j), t->trkPtError->at(j), t->trkEta->at(j), t->trkDz->at(j), t->trkDzError->at(j),
-			t->trkDxy->at(j), t->trkDxyError->at(j), t->trkNHit->at(j), t->trkChi2->at(j),
-			t->trkNdof->at(j), t->trkNlayer->at(j));
-	}
 
 	bool trackQualityCutsImp (int highPurity, float pfHcal, float pfEcal, float trkPt, float trkPtError, float trkEta, float trkDz, float trkDzError, float trkDxy, float trkDxyError, int trkNHit, float trkChi2, int trkNdof, int trkNlayer){
 		if (!highPurity) return 1;
@@ -101,14 +96,33 @@ namespace jetTrack{
 		return 0;
 	}
 
-	bool eventCuts(inputTree *t){
-		if ( t->HBHENoiseFilterResultRun2Loose ==0) return 1;
-		if ( t->pcollisionEventSelection ==0) return 1;
-		if ( t->pprimaryVertexFilter ==0) return 1;
-		if ( t->phfCoincFilter3 ==0) return 1;
-		if ( t->vz>15 || t->vz<-15) return 1;
+	bool trackQualityCuts(inputTree * t , int j){
+		return trackQualityCutsImp(t->highPurity->at(j), t->pfHcal->at(j), t->pfEcal->at(j),
+				t->trkPt->at(j), t->trkPtError->at(j), t->trkEta->at(j), t->trkDz->at(j), t->trkDzError->at(j),
+				t->trkDxy->at(j), t->trkDxyError->at(j), t->trkNHit->at(j), t->trkChi2->at(j),
+				t->trkNdof->at(j), t->trkNlayer->at(j));
+	}
+	bool trackQualityCuts(dataTree * t , int j){
+		return trackQualityCutsImp(t->highPurity->at(j), t->pfHcal->at(j), t->pfEcal->at(j),
+				t->trkPt->at(j), t->trkPtError->at(j), t->trkEta->at(j), t->trkDz->at(j), t->trkDzError->at(j),
+				t->trkDxy->at(j), t->trkDxyError->at(j), t->trkNHit->at(j), t->trkChi2->at(j),
+				t->trkNdof->at(j), t->trkNlayer->at(j));
+	}
+	bool eventCutsImp(int HBHENoiseFilterResultRun2Loose, int pcollisionEventSelection, int pprimaryVertexFilter, int phfCoincFilter3, float vz){
+		if ( HBHENoiseFilterResultRun2Loose ==0) return 1;
+		if ( pcollisionEventSelection ==0) return 1;
+		if ( pprimaryVertexFilter ==0) return 1;
+		if ( phfCoincFilter3 ==0) return 1;
+		if ( vz>15 || vz<-15) return 1;
 		return 0;
 	}
+	bool eventCuts(inputTree *t){
+		return eventCutsImp(t->HBHENoiseFilterResultRun2Loose, t->pcollisionEventSelection, t->pprimaryVertexFilter, t->phfCoincFilter3, t->vz);
+	}
+	bool eventCuts(dataTree *t){
+		return eventCutsImp(t->HBHENoiseFilterResultRun2Loose, t->pcollisionEventSelection, t->pprimaryVertexFilter, t->phfCoincFilter3, t->vz);
+	}
+
 	bool genParticleCuts(inputTree *t,int j){
 		if (t->chg->at(j)==0) return 1;
 		return 0;
