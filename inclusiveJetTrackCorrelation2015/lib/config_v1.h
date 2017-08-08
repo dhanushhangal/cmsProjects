@@ -1,11 +1,13 @@
 
 
 #define config_H
+#include <iostream>
 #include "TMath.h"
 #include "inputTree.h"
 #include "dataTree.h"
 #include "xthf4.h"
-#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
+#include "../corrTableCymbal/xiaoTrkCorr.h"
+#include "TF1.h"
 
 namespace jetTrack{
 	namespace ioconfig{
@@ -23,7 +25,7 @@ namespace jetTrack{
 	}
 
 	namespace correction{
-		auto trkc = new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
+		auto trkc = new xiaoTrkCorr("corrTableCymbal/inputCorr_cymbalTune.root");
 		float trk_corr(inputTree *t, int j ){
 			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
 		}
@@ -32,11 +34,36 @@ namespace jetTrack{
 		}
 	}
 
+	namespace trackingCorrConfig{
+		//the bin config for initial scan 
+		int ntrkpt_in = 22;
+		float trkpt_in_c[23]= {0.7,0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8, 2,
+			2.5, 3, 3.5, 4,5, 6, 7, 8, 10, 12, 16, 20, 50, 999};
+		int ncent_in = 20; 
+		float cent_in_c[21]; 
+		int neta= 100;
+		int nphi= 72;
+		float etamin = -5, etamax =5;
+		float phimin = -TMath::Pi(), phimax = TMath::Pi() ;
+		//the bin config fo the correction table scan 
+		int ncent_out = 20; 
+		float* cent_out_c = cent_in_c; 
+		int ntrkpt_out = ntrkpt_in;
+		float* trkpt_out_c= trkpt_in_c;
+//
+//----------------------------------------------------------------
+//
+		float * cent_in = cent_in_c;
+		float * cent_out = cent_out_c;
+		float* trkpt_in= trkpt_in_c;
+		float *trkpt_out = trkpt_out_c;
+	}
+
 	namespace trackingClosureConfig{
-		int ntrkpt = 9;
-		float trkpt_c[10]= {0.7, 1, 2, 3, 4, 8, 12, 16,20,999};
-		int ncent = 50; 
-		float cent[51];// initiation in load()
+		int ntrkpt = 22;
+		float* trkpt_c = trackingCorrConfig::trkpt_in_c;
+		int ncent = 20; 
+		float cent[21];// initiation in load()
 		int neta= 100;
 		int nphi= 72;
 		int npt = 3993;
@@ -47,26 +74,6 @@ namespace jetTrack{
 		float* trkpt = trkpt_c;
 		int ncent_pt = 4;
 		Double_t cent_pt[5] = {0, 20, 60, 100, 200};
-	}
-
-	namespace trackingCorrConfig{
-		int ntrkpt_in = 11;
-		float trkpt_in_c[12]= {0.7,0.8, 0.9, 1, 2, 3, 4, 8, 12, 16,20,999};
-		int ntrkpt_out = 11;
-		float trkpt_out_c[12]= {0.7,0.8, 0.9,1, 2, 3, 4, 8, 12, 16,20,999};
-		int ncent_in = 50; 
-		float cent_in_c[51]; 
-		int ncent_out = 4; 
-		float cent_out_c[5] = {0, 20, 60, 100, 200}; 
-
-		int neta= 100;
-		int nphi= 72;
-		float etamin = -5, etamax =5;
-		float phimin = -TMath::Pi(), phimax = TMath::Pi() ;
-		float * cent_in = cent_in_c;
-		float * cent_out = cent_out_c;
-		float* trkpt_in= trkpt_in_c;
-		float *trkpt_out = trkpt_out_c;
 	}
 
 	namespace anaConfig{
@@ -82,7 +89,7 @@ namespace jetTrack{
 		weight::fcent1->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15);
 		/* initiate the cent bin for tracking */
 		for(int i=0;i<trackingClosureConfig::ncent+1;++i) trackingClosureConfig::cent[i] = i*4;	
-		for(int i=0;i<trackingCorrConfig::ncent_in+1;++i) trackingCorrConfig::cent_in_c[i] = i*4;	
+		for(int i=0;i<trackingCorrConfig::ncent_in+1;++i) trackingCorrConfig::cent_in_c[i] = i*10;	
 	}
 
 

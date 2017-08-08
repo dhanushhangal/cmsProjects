@@ -6,6 +6,7 @@
 #include "xAlgo.h"
 #endif
 
+#include "TH2F.h"
 #include <iomanip> // setprecision
 #include <sstream> // stringstream
 
@@ -142,7 +143,7 @@ void xthf4::RebinW(int n, float *bins){
 	hf4 = hfnew;
 	nw=wbin.size();
 }
-int xthf4::Fill(float x, float y, float z, float w, float wit = 1){
+int xthf4::Fill(float x, float y, float z, float w, float wit){
 	int jz = xAlgo::binarySearch(z, zbin, zbin.size()-1, 0); // size-1 is the overflow bin
 	int jw = xAlgo::binarySearch(w, wbin, wbin.size()-1, 0); // size-1 is the overflow bin
 	if(jz <0) jz = nz-1;

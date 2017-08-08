@@ -1,6 +1,6 @@
 
 #ifndef config_H
-#include "config.h"
+#include "config_v1.h"
 #endif
 
 #ifndef inputTree_H
@@ -10,7 +10,6 @@
 #ifndef xthf4_H
 #include "xthf4.h"
 #endif
-
 #ifndef trackingCorr_H
 #define trackingCorr_H
 using namespace jetTrack;
@@ -130,7 +129,7 @@ void trackingCorr::getCorr(TString file){
 //	wf->Close();
 }
 
-void trackingCorr::showCorr(int ih=-1, int jh=-1){
+void trackingCorr::showCorr(int ih, int jh){
 	int nc= ceil(float(ncent_out)/10);
 	if( corr==NULL){
 		std::cout<<"no correction loaded!"<<std::endl;
