@@ -57,6 +57,7 @@ class trackingCorr  {
 		void Read();
 		void getCorr(TString file);
 		void showCorr(int i=-1, int j=-1);
+		void fixHole(TH2F* h);
 
 	public: 
 		inputTree * t;
@@ -73,7 +74,8 @@ class trackingCorr  {
 		int ntrkpt_out  ;
 		int ncent_out   ;
 		float *trkpt_out;
-		float *cent_out ;
+		float *cent_out ; 
+
 };
 
 void trackingCorr::runScan(){
@@ -107,11 +109,20 @@ void trackingCorr::Read(){
 }
 
 void trackingCorr::getCorr(TString file){
+
 	TFile* wf = TFile::Open(file, "recreate");
 	ntrkpt_out = trackingCorrConfig::ntrkpt_out;
-	ncent_out = trackingCorrConfig::ncent_out;
 	trkpt_out = trackingCorrConfig::trkpt_out;
+	ncent_out = trackingCorrConfig::ncent_out;
 	cent_out = trackingCorrConfig::cent_out;
+
+	/*
+	//for gettign aux file to fix the hole problem
+	ncent_out = 4;
+	float fcent[5] = {0,20, 60, 100, 200};
+	cent_out = fcent;
+	*/
+
 	gen->RebinZ(ntrkpt_out, trkpt_out);
 	rec->RebinZ(ntrkpt_out, trkpt_out);
 	gen->RebinW(ncent_out, cent_out);
@@ -123,10 +134,13 @@ void trackingCorr::getCorr(TString file){
 		for(int j=0; j<ncent_out; ++j){
 			corr[i+j*ntrkpt_out]= (TH2F*) gen->hist(i,j)->Clone(Form("corr_%d_%d",i,j));
 			corr[i+j*ntrkpt_out]->Divide( (TH2F*) rec->hist(i,j));
+			if(i<2) fixHole(corr[i+j*ntrkpt_out]);
 			corr[i+j*ntrkpt_out]->Write();
 		}
 	}
-//	wf->Close();
+
+
+	//	wf->Close();
 }
 
 void trackingCorr::showCorr(int ih, int jh){
@@ -170,5 +184,38 @@ void trackingCorr::showCorr(int ih, int jh){
 	}
 }
 
+//for fixing the hole in the tracker in 2015 PbPb data
+void trackingCorr::fixHole(TH2F* h){
+	int xh=36, yh=65;
+	int radius=3;
+	float peak=0;
+	int ip, jp;
+	for(int i=xh-radius; i<xh+radius+1;i++){
+		for(int j=yh-radius; j<yh+radius+1;j++){
+			//	if(h->GetBinContent(i,j)!=0) continue;
+			if(peak< h->GetBinContent(i,j)){
+				peak = h->GetBinContent(i,j);
+				ip = i;
+				jp = j;
+			}
+		}
+	}
+	int rr=2;
+	float boundary=float(h->GetBinContent(ip,jp+radius)+h->GetBinContent(ip,jp-radius)
+			+h->GetBinContent(ip+radius,jp)+h->GetBinContent(ip-radius,jp))/4;
+	for(int i=ip-radius; i<ip+radius+1;i++){
+		for(int j=jp-radius; j<jp+radius+1;j++){
+			//cout<<"!"<<i<<", "<<j<<endl;
+			if(h->GetBinContent(i,j)==0){
+				float bin = peak- (peak-boundary)/5*pow(pow((j-jp),2)+pow((i-ip),2),0.5);
+				if(bin<0){ 
+					cout<<"!"<<endl;
+					bin = boundary;
+				}
+				h->SetBinContent(i, j, bin);
+			}
+		}
+	}
+}
 
 #endif

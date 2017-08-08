@@ -150,6 +150,9 @@ void trackingClosure::Read(){
 	genpt = (TH2F*) f->Get("genpt");
 	recpt = (TH2F*) f->Get("recpt");
 	crept = (TH2F*) f->Get("crept");
+	gen->Write();
+	rec->Write();
+	cre->Write();
 }
 
 trackingClosure::~trackingClosure(){
@@ -171,6 +174,9 @@ void trackingClosure::DrawClosure(TString name="", TString type= ""){
 	TH1F *hgen, *hrec, *hcre;
 	TLine *ll = new TLine();
 	ll->SetLineStyle(8);
+
+
+
 	float fitRange0 = xmin, fitRange1 = xmax;
 	TF1* p0 = new TF1("p0", "pol0", fitRange0, fitRange1);
 	for(int i=0;i<ana_ntrkpt ; ++i){
@@ -182,10 +188,9 @@ void trackingClosure::DrawClosure(TString name="", TString type= ""){
 			hrec= (TH1F*)rec->hist(i,j)->ProjectionX();	
 			hcre= (TH1F*)cre->hist(i,j)->ProjectionX();	
 			hgen->Rebin();
-			hrec->Rebin();
-			hcre->Rebin();
+			hrec->Rebin(); hcre->Rebin();
 			hgen->SetAxisRange(xmin, xmax , "X");
-			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !j, 1);
+			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j), 1);
 			ll->DrawLine(xmin, 1, xmax,1);
 			ll->DrawLine(xmin, 1.05, xmax,1.05);
 			ll->DrawLine(xmin, .95, xmax,.95);
@@ -204,7 +209,7 @@ void trackingClosure::DrawClosure(TString name="", TString type= ""){
 			hrec->Rebin();
 			hcre->Rebin();
 			hgen->SetAxisRange(xmin, xmax , "X");
-			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !j);
+			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j));
 			ll->DrawLine(xmin, 1, xmax,1);
 			ll->DrawLine(xmin, 1.05, xmax,1.05);
 			ll->DrawLine(xmin, .95, xmax,.95);
@@ -277,10 +282,10 @@ TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2,
 		ltemp= new TLegend(0.15,0.67,0.6,0.97);
 		ltemp->SetLineColor(kWhite);
 		ltemp->SetFillColorAlpha(kWhite, 0);
-	ltemp->AddEntry(hden, "gen. particles");
-	ltemp->AddEntry(hnum1, "corr. tracks");
-	ltemp->AddEntry(hnum2, "reco. tracks");
-	ltemp->Draw();
+		ltemp->AddEntry(hden, "gen. particles");
+		ltemp->AddEntry(hnum1, "corr. tracks");
+		ltemp->AddEntry(hnum2, "reco. tracks");
+		ltemp->Draw();
 	}
 	pad->cd(2);
 	hratio1->SetStats(0);

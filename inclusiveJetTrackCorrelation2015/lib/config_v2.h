@@ -28,7 +28,7 @@ namespace jetTrack{
 	}
 
 	namespace correction{
-		auto trkc = new xiaoTrkCorr("../tracking/cymbalCorr_FineBin.root");
+		xiaoTrkCorr* trkc= new xiaoTrkCorr("../tracking/cymbalCorr_FineBin.root");
 		float trk_corr(inputTree *t, int j ){
 			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
 		}
@@ -83,7 +83,7 @@ namespace jetTrack{
 
 	namespace anaConfig{
 		int ntrkpt = 9;
-		float trkpt_c[10]= {0.7,1, 2, 3, 4, 8, 12, 16,20,999};
+		float trkpt_c[10]= {0.7,0.8, 0.9, 1, 2, 3, 4, 8,20,999};
 		int ncent = 4; 
 		float cent[5] = {0, 20, 60, 100, 200}; 
 		float *trkpt= trkpt_c;
