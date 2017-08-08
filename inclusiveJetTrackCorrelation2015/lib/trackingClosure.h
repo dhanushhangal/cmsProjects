@@ -268,7 +268,7 @@ TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2,
 	pad->Divide(1, 2, 0,0);
 	pad->cd(1);
 	hden->SetStats(0);
-	hden->SetTitle("");
+//	hden->SetTitle("");
 	hden->Draw();
 	hnum1->Draw("same");
 	hnum2->Draw("same");
