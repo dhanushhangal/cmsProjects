@@ -130,7 +130,7 @@ void trackingCorr::getCorr(TString file){
 }
 
 void trackingCorr::showCorr(int ih, int jh){
-	int nc= ceil(float(ncent_out)/10);
+	int nc= ceil(float(ncent_out)/20);
 	if( corr==NULL){
 		std::cout<<"no correction loaded!"<<std::endl;
 		return;
@@ -144,7 +144,7 @@ void trackingCorr::showCorr(int ih, int jh){
 				for(int ic=0; ic<nc; ++ic){
 					cc[ic+j*nc]=new TCanvas(Form("ccorr_%d",ic+j*nc),"", 2000,1600);
 					cc[ic+j*nc]->Divide(5,4,0,0);
-					for(int k=0;k<ncent_out && k<10; ++k){
+					for(int k=0;k<ncent_out && k<20; ++k){
 						cc[ic+j*nc]->cd(k+1);
 						corr[j+k*ntrkpt_out]->Draw("colz");
 					}
@@ -156,7 +156,7 @@ void trackingCorr::showCorr(int ih, int jh){
 			for(int ic=0; ic<nc; ++ic){
 				cc[ic]=new TCanvas(Form("ccorr_%d",ic),"", 2000,1600);
 				cc[ic]->Divide(5,4,0,0);
-				for(int k=0;k<ncent_out && k<10; ++k){
+				for(int k=0;k<ncent_out && k<20; ++k){
 					cc[ic]->cd(k+1);
 					cout<<k<<endl;
 					corr[ih+k*ntrkpt_out]->Draw("colz");
@@ -169,4 +169,6 @@ void trackingCorr::showCorr(int ih, int jh){
 		corr[ih+jh*ntrkpt_out]->Draw("colz");
 	}
 }
+
+
 #endif

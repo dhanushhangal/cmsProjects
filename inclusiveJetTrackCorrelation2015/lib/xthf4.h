@@ -6,7 +6,10 @@
 #include "xAlgo.h"
 #endif
 
+#ifndef ROOT_TH2F
 #include "TH2F.h"
+#endif
+
 #include <iomanip> // setprecision
 #include <sstream> // stringstream
 
@@ -78,13 +81,15 @@ void xthf4::RebinZ(int n, float *bins){
 	std::vector<int > binIndx;
 	for(int j=0; j<n+1; ++j){
 		for(int i=j; i<zbin.size(); ++i){
-			if(zbin[i]==bins[j]){
+			if(zbin.at(i)==bins[j]){
 				binIndx.push_back(i);
 				break;
 			}
-			std::cout<<"error:binning can't be match exactly!"<<std::endl;
-			return ;
 		}
+	}
+	if(binIndx.size()!=n+1){
+		std::cout<<"error:z-bin can't be match exactly!"<<std::endl;
+		return ;
 	}
 	TString temp;
 	ztitle.clear();
@@ -117,9 +122,11 @@ void xthf4::RebinW(int n, float *bins){
 				binIndx.push_back(i);
 				break;
 			}
-			return;
-		std::cout<<"error:binning can't be match exactly!"<<std::endl;
 		}
+	}
+	if(binIndx.size()!=n+1){
+		std::cout<<"error:w-bin can't be match exactly!"<<std::endl;
+		return ;
 	}
 	TString temp;
 	wtitle.clear();
