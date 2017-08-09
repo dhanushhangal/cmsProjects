@@ -11,6 +11,17 @@
 #include "xthf4.h"
 #endif
 
+#ifndef ROOT_TCanvas
+#include "TCanvas.h"
+#endif
+
+#ifndef ROOT_TLegend
+#include "TLegend.h"
+#endif
+
+#ifndef ROOT_TLine
+#include "TLine.h"
+#endif
 
 #ifndef trackingClosure_H
 #define trackingClosure_H
@@ -163,7 +174,7 @@ trackingClosure::~trackingClosure(){
 	ratioVec.clear();
 }
 
-void trackingClosure::DrawClosure(TString name="", TString type= ""){
+void trackingClosure::DrawClosure(TString name, TString type){
 	float xmin =-3 , xmax=3 , ymin = 0.85, ymax= 1.15;
 	int ana_ntrkpt=anaConfig::ntrkpt;
 	int ana_ncent=anaConfig::ncent;

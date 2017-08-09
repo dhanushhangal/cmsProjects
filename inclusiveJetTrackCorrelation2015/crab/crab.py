@@ -2,10 +2,11 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 #subScript = "HT_Analyzer_All_JFFCorr2_PbPb_Reduced.C"
-subScript = "tracker.C"
+#subScript = "tracker.C"
+subScript = "closMaker.C"
 
 config.section_("General")
-config.General.requestName = 'cymbal_trkcorrTables_fineBin'
+config.General.requestName = 'cymbal_trkClosure_fineBin'
 config.General.workArea = config.General.requestName 
 config.General.transferLogs = False
 
@@ -15,8 +16,9 @@ config.JobType.psetName = 'PSet.py'
 config.JobType.scriptExe = 'runScript.sh'
 config.JobType.scriptArgs = ['script='+subScript]
 #config.JobType.inputFiles = ['FrameworkJobReport.xml','TrkCorr_Jun7_Iterative_PbPb_etaLT2p4.tar.gz','hist_class_def_HT.h',subScript]
-config.JobType.inputFiles = ['FrameworkJobReport.xml',subScript,'corrTableCymbal.tar.gz','lib.tar.gz']
-config.JobType.outputFiles = ['corr.root']
+config.JobType.inputFiles = ['FrameworkJobReport.xml',subScript,'trkCorrTable.tar.gz','lib.tar.gz']
+#config.JobType.outputFiles = ['corr.root']
+config.JobType.outputFiles = ['trkClos.root']
 config.JobType.maxJobRuntimeMin = 1800
 
 config.section_("Data")
