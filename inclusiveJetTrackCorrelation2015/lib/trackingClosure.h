@@ -23,14 +23,17 @@
 #include "TLine.h"
 #endif
 
+#ifndef xUtility
+#include "utility.h"
+#endif
+
 #ifndef trackingClosure_H
 #define trackingClosure_H
 using namespace jetTrack;
 
 class trackingClosure  {
 	public: 
-		trackingClosure(TFile * ff):
-			f(ff),
+		trackingClosure(TString file):
 			ntrkpt(trackingClosureConfig::ntrkpt),
 			ncent(trackingClosureConfig::ncent),
 			nx(trackingClosureConfig::neta),
@@ -47,6 +50,7 @@ class trackingClosure  {
 		gen = new xthf4();
 		rec = new xthf4();
 		cre = new xthf4();
+		f= TFile::Open(file);
 	};
 		trackingClosure(inputTree* tt):
 			t(tt),
@@ -149,6 +153,7 @@ void trackingClosure::Read(){
 	int ana_ncent=anaConfig::ncent;
 	float* ana_trkpt = anaConfig::trkpt;
 	float* ana_cent = anaConfig::cent;
+	TFile* wf = TFile::Open("closure_Output.root", "recreate");
 	gen->Read("gen", "gen", f, ntrkpt, trkpt, ncent, cent);
 	rec->Read("rec", "rec", f, ntrkpt, trkpt, ncent, cent);
 	cre->Read("cre", "cre", f, ntrkpt, trkpt, ncent, cent);
@@ -181,13 +186,14 @@ void trackingClosure::DrawClosure(TString name, TString type){
 	float* ana_trkpt = anaConfig::trkpt;
 	float* ana_cent = anaConfig::cent;
 	ratioVec.reserve(ana_ntrkpt*ana_ncent);
-	TCanvas * c[ana_ntrkpt][ana_ncent];
+	TCanvas * c[ana_ntrkpt][2];
 	TH1F *hgen, *hrec, *hcre;
 	TLine *ll = new TLine();
 	ll->SetLineStyle(8);
 
 
-
+	auto ut= new padPolisher();
+	TPad* pd;
 	float fitRange0 = xmin, fitRange1 = xmax;
 	TF1* p0 = new TF1("p0", "pol0", fitRange0, fitRange1);
 	for(int i=0;i<ana_ntrkpt ; ++i){
@@ -201,10 +207,17 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			hgen->Rebin();
 			hrec->Rebin(); hcre->Rebin();
 			hgen->SetAxisRange(xmin, xmax , "X");
-			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j), 1);
+			pd=ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j), 1);
 			ll->DrawLine(xmin, 1, xmax,1);
 			ll->DrawLine(xmin, 1.05, xmax,1.05);
 			ll->DrawLine(xmin, .95, xmax,.95);
+			if(j==2){
+				pd->cd(2);
+				ut->tx->SetTextSize(0.07);
+				ut->ptLabel(i,ana_trkpt);
+			}
+			pd->cd(1);
+			ut->centLabel(j);
 		}		
 		if(name !="") c[i][0]->SaveAs(name+Form("_trkClosure_eta_%d",i)+type);
 	}
@@ -220,11 +233,19 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			hrec->Rebin();
 			hcre->Rebin();
 			hgen->SetAxisRange(xmin, xmax , "X");
-			ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j));
+			pd=ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j));
 			ll->DrawLine(xmin, 1, xmax,1);
 			ll->DrawLine(xmin, 1.05, xmax,1.05);
 			ll->DrawLine(xmin, .95, xmax,.95);
+			if(j==2){
+				pd->cd(2);
+				ut->tx->SetTextSize(0.07);
+				ut->ptLabel(i,ana_trkpt);
+			}
+			pd->cd(1);
+			ut->centLabel(j);
 		}		
+		ut->cent4Labels(c[i][1]);
 		if(name !="") c[i][1]->SaveAs(name+Form("_trkClosure_phi_%d",i)+type);
 	}
 
@@ -284,8 +305,9 @@ TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2,
 	pad->Divide(1, 2, 0,0);
 	pad->cd(1);
 	hden->SetStats(0);
-//	hden->SetTitle("");
+	hden->SetTitle("");
 	hden->Draw();
+	gPad->SetTicks(2,2);
 	hnum1->Draw("same");
 	hnum2->Draw("same");
 	TLegend *ltemp;
@@ -303,6 +325,7 @@ TPad* trackingClosure::ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2,
 	hratio1->SetAxisRange(ymin, ymax , "Y");
 	hratio1->Draw();
 	hratio2->Draw("same");
+	gPad->SetTicks(2,2);
 	if(doLegend){
 		TLegend *ltemp2 = new TLegend(0.15,0.72,0.8,0.97);
 		ltemp2->SetLineColor(kWhite);
