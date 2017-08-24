@@ -193,6 +193,7 @@ void trackingClosure::DrawClosure(TString name, TString type){
 
 
 	auto ut= new padPolisher();
+	ut->tx->SetTextSize(0.07);
 	TPad* pd;
 	float fitRange0 = xmin, fitRange1 = xmax;
 	TF1* p0 = new TF1("p0", "pol0", fitRange0, fitRange1);
@@ -213,13 +214,12 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			ll->DrawLine(xmin, .95, xmax,.95);
 			if(j==2){
 				pd->cd(2);
-				ut->tx->SetTextSize(0.07);
 				ut->ptLabel(i,ana_trkpt);
 			}
 			pd->cd(1);
 			ut->centLabel(j);
 		}		
-		if(name !="") c[i][0]->SaveAs(name+Form("_trkClosure_eta_%d",i)+type);
+		if(name !="") c[i][0]->SaveAs(name+Form("_trkClosure_eta_%d",i)+"."+type);
 	}
 	for(int i=0;i<ana_ntrkpt ; ++i){
 		c[i][1]= new TCanvas(Form("c_%d_1",i),"", 1200,600);
@@ -239,14 +239,13 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			ll->DrawLine(xmin, .95, xmax,.95);
 			if(j==2){
 				pd->cd(2);
-				ut->tx->SetTextSize(0.07);
 				ut->ptLabel(i,ana_trkpt);
 			}
 			pd->cd(1);
 			ut->centLabel(j);
 		}		
 		ut->cent4Labels(c[i][1]);
-		if(name !="") c[i][1]->SaveAs(name+Form("_trkClosure_phi_%d",i)+type);
+		if(name !="") c[i][1]->SaveAs(name+Form("_trkClosure_phi_%d",i)+"."+type);
 	}
 
 	TH1F* closure[4];
@@ -268,7 +267,7 @@ void trackingClosure::DrawClosure(TString name, TString type){
 		closure[ic]->Draw();
 		gPad->SetLogx();
 	}
-	cpt->SaveAs(name+"_closure_pt"+type);
+	cpt->SaveAs(name+"_closure_pt"+"."+type);
 	return;
 }
 

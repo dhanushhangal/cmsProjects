@@ -9,7 +9,7 @@
 // old cymbal correction
 //#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
 // fine bin cymbal correction
-#include "xiaoTrkCorr.h"
+#include "xiaoTrkCorr.h" //new correction
 #include "TF1.h"
 
 namespace jetTrack{
@@ -28,7 +28,10 @@ namespace jetTrack{
 	}
 
 	namespace correction{
+		// fine bin correction
 		xiaoTrkCorr* trkc= new xiaoTrkCorr("../tracking/cymbalCorr_FineBin.root");
+		// broder bin correction
+		//xiaoTrkCorr* trkc= new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
 		float trk_corr(inputTree *t, int j ){
 			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
 		}
@@ -80,6 +83,18 @@ namespace jetTrack{
 		int ncent_pt = 4;
 		Double_t cent_pt[5] = {0, 20, 60, 100, 200};
 	}
+	namespace correlationConfig{
+		int ntrkpt = 9;
+		float trkpt[10]= {0.7, 1, 2, 3, 4, 8,12, 16,20,999};
+		int ncent = 4; 
+		float cent[5] = {0, 20, 60, 100, 200}; 
+		int njetpt=3;
+		float jetpt[4]={120,150,200,999};
+		int ndeta= 500;
+		int ndphi= 200;
+		float detalow = -5, detaup =5;
+		float dphilow = -TMath::Pi()/2, dphiup = 3*TMath::Pi()/2 ;
+	}
 
 	namespace anaConfig{
 		int ntrkpt = 9;
@@ -101,13 +116,14 @@ namespace jetTrack{
 
 	bool trackQualityCutsImp (int highPurity, float pfHcal, float pfEcal, float trkPt, float trkPtError, float trkEta, float trkDz, float trkDzError, float trkDxy, float trkDxyError, int trkNHit, float trkChi2, int trkNdof, int trkNlayer){
 		if (!highPurity) return 1;
-		float Et = (pfHcal+pfEcal)/TMath::CosH(trkEta);
-		if (!(trkPt<20 || (Et>0.5*trkPt))) return 1;
-		if ( TMath::Abs(trkDz/trkDzError) >=3) return 1;
-		if ( TMath::Abs(trkDxy/trkDxyError) >=3) return 1;
+		if ( trkNHit< 11) return 1;
 		if ( trkPtError/trkPt>=0.1) return 1;
 		if ( trkPtError/trkPt>=0.3) return 1;
-		if ( trkNHit< 11) return 1;
+//		if (TMath::Abs(trkEta)>1.6) return 1; // check mid-rapidity
+		if ( TMath::Abs(trkDz/trkDzError) >=3) return 1;
+		if ( TMath::Abs(trkDxy/trkDxyError) >=3) return 1;
+		float Et = (pfHcal+pfEcal)/TMath::CosH(trkEta);
+		if (!(trkPt<20 || (Et>0.5*trkPt))) return 1;
 		if (float(trkChi2)/float(trkNdof)/float(trkNlayer)>0.15) return 1;
 		return 0;
 	}
@@ -141,6 +157,7 @@ namespace jetTrack{
 
 	bool genParticleCuts(inputTree *t,int j){
 		if (t->chg->at(j)==0) return 1;
+//		if (TMath::Abs(t->eta->at(j))>1.6) return 1; // check mid-rapidity
 		return 0;
 	}
 }

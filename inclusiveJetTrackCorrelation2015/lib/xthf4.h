@@ -97,6 +97,7 @@ void xthf4::RebinZ(int n, float *bins){
 	TH2F ** hfnew = new TH2F*[nw*(n+1)];
 	for(int l=0; l<nw; ++l){
 		for(int j=0; j<n; ++j){
+			cout<<binIndx[j]<<endl;
 			hfnew[j+l*(n+1)]=hf4[binIndx[j]+l*nz];
 			hfnew[j+l*(n+1)]->SetName(hname+Form("_%d_%d",j, l));
 			temp = htitle+ztitle[j]+wtitle[l];

@@ -6,10 +6,8 @@
 #include "xAlgo.h"
 #endif
 
-#ifndef SSTREAM_H
 #include <iomanip> // setprecision
 #include <sstream> // stringstream
-#endif
 
 class xthf3 {
 	public: 
