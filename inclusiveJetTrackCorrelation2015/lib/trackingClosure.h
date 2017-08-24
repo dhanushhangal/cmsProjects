@@ -6,6 +6,9 @@
 #ifndef inputTree_H
 #include "inputTree.h"
 #endif
+#ifndef dataTree_H
+#include "dataTree.h"
+#endif
 
 #ifndef xthf4_H
 #include "xthf4.h"
@@ -45,7 +48,8 @@ class trackingClosure  {
 			trkpt(trackingClosureConfig::trkpt),
 			cent(trackingClosureConfig::cent)
 	{
-		t=NULL;
+		i_t=NULL;
+		d_t=NULL;
 		isread = 1;
 		gen = new xthf4();
 		rec = new xthf4();
@@ -53,7 +57,39 @@ class trackingClosure  {
 		f= TFile::Open(file);
 	};
 		trackingClosure(inputTree* tt):
-			t(tt),
+			i_t(tt),
+			ntrkpt(trackingClosureConfig::ntrkpt),
+			ncent(trackingClosureConfig::ncent),
+			nx(trackingClosureConfig::neta),
+			ny(trackingClosureConfig::nphi),
+			etamin(trackingClosureConfig::etamin),
+			etamax(trackingClosureConfig::etamax),
+			phimin(trackingClosureConfig::phimin),
+			phimax(trackingClosureConfig::phimax),
+			trkpt(trackingClosureConfig::trkpt),
+			cent(trackingClosureConfig::cent)
+	{
+		int   npt  = trackingClosureConfig::npt;
+		float ptmin= trackingClosureConfig::ptmin;
+		float ptmax= trackingClosureConfig::ptmax;
+		int   ncent_pt   =trackingClosureConfig::ncent_pt;
+		Double_t* cent_pt=trackingClosureConfig::cent_pt;
+		d_t=NULL;
+		f=NULL;
+		isread = 0;
+		gen = new xthf4("gen","gen", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
+		rec = new xthf4("rec","rec", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
+		cre = new xthf4("cre","cre", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
+		genpt= new TH2F("genpt", "gen pt distriubtion"        ,npt, ptmin, ptmax, ncent_pt, cent_pt);
+		recpt= new TH2F("recpt", "track pt distriubtion"      ,npt, ptmin, ptmax, ncent_pt, cent_pt);
+		crept= new TH2F("crept", "corr. track pt distriubtion",npt, ptmin, ptmax, ncent_pt, cent_pt);
+		genpt->Sumw2();
+		recpt->Sumw2();
+		crept->Sumw2();
+	};
+
+		trackingClosure(dataTree* tt):
+			d_t(tt),
 			ntrkpt(trackingClosureConfig::ntrkpt),
 			ncent(trackingClosureConfig::ncent),
 			nx(trackingClosureConfig::neta),
@@ -71,19 +107,19 @@ class trackingClosure  {
 		int   ncent_pt   =trackingClosureConfig::ncent_pt;
 		Double_t* cent_pt=trackingClosureConfig::cent_pt;
 		f=NULL;
+		i_t=NULL;
 		isread = 0;
-		gen = new xthf4("gen","gen", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
 		rec = new xthf4("rec","rec", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
 		cre = new xthf4("cre","cre", nx,etamin, etamax , ny, phimin, phimax,ntrkpt, trkpt,ncent, cent);
-		genpt= new TH2F("genpt", "gen pt distriubtion"        ,npt, ptmin, ptmax, ncent_pt, cent_pt);
 		recpt= new TH2F("recpt", "track pt distriubtion"      ,npt, ptmin, ptmax, ncent_pt, cent_pt);
 		crept= new TH2F("crept", "corr. track pt distriubtion",npt, ptmin, ptmax, ncent_pt, cent_pt);
-		genpt->Sumw2();
 		recpt->Sumw2();
 		crept->Sumw2();
 	};
 
 		void runScan();
+		void runMCScan(inputTree* t);
+		void runDataScan(dataTree *t);
 		void Read();
 		void DrawClosure(TString name="", TString type= "");
 		TPad* ratioPlot(TH1F* hden, TH1F* hnum1, TH1F* hnum2, 
@@ -92,7 +128,8 @@ class trackingClosure  {
 
 	public: 
 		TFile *f;
-		inputTree * t;
+		inputTree * i_t;
+		dataTree * d_t;
 		int ntrkpt;
 		int ncent;
 		int nx, ny;
@@ -109,6 +146,12 @@ class trackingClosure  {
 };
 
 void trackingClosure::runScan(){
+	if(d_t ==NULL) runMCScan(i_t);
+	else runDataScan(d_t);
+}
+
+void trackingClosure::runMCScan(inputTree *t){
+	std::cout<<"prcessing the MC tree.."<<std::endl;
 	loadConfig();
 	Long64_t nentries = t->fChain->GetEntriesFast();
 	for(Long64_t jentry = 0; jentry <nentries ; ++jentry){
@@ -127,11 +170,11 @@ void trackingClosure::runScan(){
 			recpt->Fill(t->trkPt->at(j), t->hiBin, w_cent*w_vz);
 			crept->Fill(t->trkPt->at(j), t->hiBin, w_cent*w_vz*trkcorr);
 		}
-		for(int j=0;j<t->pt->size(); ++j){
-			if(genParticleCuts(t,j))continue;
-			gen->Fill(t->eta->at(j), t->phi->at(j), t->pt->at(j), t->hiBin, w_vz);
-			genpt->Fill(t->pt->at(j), t->hiBin, w_cent*w_vz);
-		}
+			for(int j=0;j<t->pt->size(); ++j){
+				if(genParticleCuts(t,j))continue;
+				gen->Fill(t->eta->at(j), t->phi->at(j), t->pt->at(j), t->hiBin, w_vz);
+				genpt->Fill(t->pt->at(j), t->hiBin, w_cent*w_vz);
+			}
 	}
 	genpt->Scale(1.0/nentries);
 	recpt->Scale(1.0/nentries);
@@ -140,6 +183,33 @@ void trackingClosure::runScan(){
 	rec->Write();
 	cre->Write();
 	genpt->Write();
+	recpt->Write();
+	crept->Write();
+}
+
+void trackingClosure::runDataScan(dataTree* t){
+	std::cout<<"prcessing the data tree.."<<std::endl;
+	loadConfig();
+	Long64_t nentries = t->fChain->GetEntriesFast();
+	for(Long64_t jentry = 0; jentry <nentries ; ++jentry){
+		if(jentry %1000 == 0) std::cout<<"processing "<<jentry<<"th event.."<<std::endl;
+		t->GetEntry(jentry);
+		float w_vz=1;
+		float w_cent=1;
+		if(eventCuts(t)) continue;
+		for(int j=0;j<t->trkPt->size(); ++j){
+			if(trackQualityCuts(t,j))continue;
+			float trkcorr = correction::trk_corr(t, j);
+			rec->Fill(t->trkEta->at(j), t->trkPhi->at(j), t->trkPt->at(j), t->hiBin);
+			cre->Fill(t->trkEta->at(j), t->trkPhi->at(j), t->trkPt->at(j), t->hiBin, trkcorr);
+			recpt->Fill(t->trkPt->at(j), t->hiBin);
+			crept->Fill(t->trkPt->at(j), t->hiBin, trkcorr);
+		}
+	}
+	recpt->Scale(1.0/nentries);
+	crept->Scale(1.0/nentries);
+	rec->Write();
+	cre->Write();
 	recpt->Write();
 	crept->Write();
 }
