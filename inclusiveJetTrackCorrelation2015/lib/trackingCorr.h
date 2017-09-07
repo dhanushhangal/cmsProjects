@@ -12,7 +12,11 @@
 #endif
 #ifndef trackingCorr_H
 #define trackingCorr_H
+
+#include "../Austin_TrkCorr/getTrkCorr.h"
 using namespace jetTrack;
+
+TrkCorr * Austin_corr = new TrkCorr("../Austin_TrkCorr/");
 
 class trackingCorr  {
 	public: 
@@ -51,6 +55,7 @@ class trackingCorr  {
 		corr=NULL;
 		gen = new xthf4();
 		rec = new xthf4();
+		doSymmetrization = false;
 	}
 
 		void runScan();
@@ -58,6 +63,10 @@ class trackingCorr  {
 		void getCorr(TString file);
 		void showCorr(int i=-1, int j=-1);
 		void fixHole(TH2F* h);
+		void loadDataTracks(TString datafile);
+		void symmetrization(TH2F* h, TH2F* dh);
+		void symmetrization2(TH2F* h); // copy the right to the left
+		void patchCorr(TH2F* h, float pt, float cent);
 
 	public: 
 		inputTree * t;
@@ -68,13 +77,17 @@ class trackingCorr  {
 		float xmin, xmax, ymin, ymax;
 		xthf4 * gen;
 		xthf4 * rec;
+		xthf4 * data_cre;
+		xthf4 * data_rec;
 		bool readonly;
 		TFile* f;
+		TFile* data_f;
 		TH2F** corr;
 		int ntrkpt_out  ;
 		int ncent_out   ;
 		float *trkpt_out;
 		float *cent_out ; 
+		bool doSymmetrization;
 
 };
 
@@ -96,6 +109,15 @@ void trackingCorr::runScan(){
 	}
 	gen->Write();
 	rec->Write();
+}
+
+void trackingCorr::loadDataTracks(TString file){
+	doSymmetrization = true;
+	data_f = TFile::Open(file);
+	data_cre= new xthf4(); 
+	data_rec= new xthf4(); 
+	data_cre->Read("cre", "cre", data_f, ntrkpt, trkpt, ncent, cent);
+	data_rec->Read("rec", "rec", data_f, ntrkpt, trkpt, ncent, cent);
 }
 
 void trackingCorr::Read(){
@@ -138,9 +160,47 @@ void trackingCorr::getCorr(TString file){
 			corr[i+j*ntrkpt_out]->Write();
 		}
 	}
+	//here didn't delete the histogram so the potential memory leak is expected!! needs to fix
+	int nptSymm = 2;
+	
+/*
+	if(!doSymmetrization) return;
+	TFile* wf2 = TFile::Open("symmetrized_"+file, "recreate");
+	// symmetrization only apply to the 3 lowest pt bins
+	for(int i=0; i<ntrkpt_out; ++i){
+		for(int j=0; j<ncent_out; ++j){
+			corr[i+j*ntrkpt_out]= (TH2F*) gen->hist(i,j)->Clone(Form("corr_%d_%d",i,j));
+			corr[i+j*ntrkpt_out]->Divide( (TH2F*) rec->hist(i,j));
+			if(i<2) fixHole(corr[i+j*ntrkpt_out]);
+			if(i<nptSymm) symmetrization((TH2F*)data_cre->hist(i,j), corr[i+j*ntrkpt_out]);
+			corr[i+j*ntrkpt_out]->Write();
+		}
+	}
+*/
+	TFile* wf2 = TFile::Open("eta_symmetry_"+file, "recreate");
+	for(int i=0; i<ntrkpt_out; ++i){
+		for(int j=0; j<ncent_out; ++j){
+			corr[i+j*ntrkpt_out]= (TH2F*) gen->hist(i,j)->Clone(Form("corr_%d_%d",i,j));
+			corr[i+j*ntrkpt_out]->Divide( (TH2F*) rec->hist(i,j));
+			if(i<2) fixHole(corr[i+j*ntrkpt_out]);
+			if(i<nptSymm) symmetrization2(corr[i+j*ntrkpt_out]);
+			corr[i+j*ntrkpt_out]->Write();
+		}
+	}
+	/*
+	TFile* wf3 = TFile::Open("patched_"+file, "recreate");
 
+	for(int i=0; i<ntrkpt_out; ++i){
+		for(int j=0; j<ncent_out; ++j){
+			corr[i+j*ntrkpt_out]= (TH2F*) gen->hist(i,j)->Clone(Form("corr_%d_%d",i,j));
+			corr[i+j*ntrkpt_out]->Divide( (TH2F*) rec->hist(i,j));
+			if(i<2) fixHole(corr[i+j*ntrkpt_out]);
+			if(i<nptSymm) patchCorr(corr[i+j*ntrkpt_out],(trkpt_out[i]+trkpt_out[i+1])/2, (cent_out[j]+cent_out[j+1])/2);
+			corr[i+j*ntrkpt_out]->Write();
+		}
+	}
+	*/
 
-	//	wf->Close();
 }
 
 void trackingCorr::showCorr(int ih, int jh){
@@ -214,6 +274,57 @@ void trackingCorr::fixHole(TH2F* h){
 				}
 				h->SetBinContent(i, j, bin);
 			}
+		}
+	}
+}
+
+void trackingCorr::symmetrization2(TH2F* h){
+	int eta_low=34, eta_up=41, phi_low=63, phi_up=67;
+	for(int i=eta_low; i<eta_up+1; ++i){
+		for(int j=phi_low; j<phi_up+1; ++j){
+			float content = h->GetBinContent(101-i, j);
+			cout<<" eta="<<h->GetXaxis()->GetBinCenter(i)<<" reflected eta="<<h->GetXaxis()->GetBinCenter(101-i)<<endl;
+//			cout<<content<<endl;
+			h->SetBinContent(i,j,content );
+		}
+	}
+}
+void trackingCorr::symmetrization(TH2F* h, TH2F* corr){
+	float cont ;
+	int nx = h->GetNbinsX();
+	int ny = h->GetNbinsY();
+	TH2F* temp = (TH2F*)h->Clone();
+	for(int j=0; j<ny+1;j++){
+		for(int i=1;i<nx+1;i++){
+//			if( j ==72)cout<<j<<endl;
+			if( float(ny)/2<j && h->GetBinContent(i,j) !=0){
+				cont = h->GetBinContent(i,j);
+				cont = h->GetBinContent(i,ny-j+1)/cont;
+				//                      if(cont == 0){
+				//                              cout<<"den: "<<h->GetBinContent(i,j)<<endl;
+				//                              cout<<"num: "<<h->GetBinContent(i,ny-j+1)<<" at x= "<<\
+				//                                      h->GetXaxis()->GetBinCenter(i)<<"; y= "<<\
+				//                                      h->GetYaxis()->GetBinCenter(ny-j+1)<<endl;
+				//                              cout<<"with i= "<<i<<"; "<<"j= "<<ny-j+1<<endl;
+				//                      }
+				temp->SetBinContent(i,j, cont);
+			}
+			//      else if( h->GetBinContent(i,j) !=0) temp->SetBinContent(i,j, 1);
+			else temp->SetBinContent(i,j, 1);
+		}
+	}
+	corr->Multiply(temp);
+	delete temp;
+}
+
+void trackingCorr::patchCorr(TH2F* h, float pt, float cent){
+	int eta_low=32, eta_up=43, phi_low=64, phi_up=67;
+	for(int i=eta_low; i<eta_up+1; ++i){
+		for(int j=phi_low; j<phi_up+1; ++j){
+			float eta=h->GetXaxis()->GetBinCenter(i);
+			float phi=h->GetYaxis()->GetBinCenter(j);
+			float content = Austin_corr->getTrkCorr(pt, eta, phi, cent, 999);
+			h->SetBinContent(i,j,content );
 		}
 	}
 }

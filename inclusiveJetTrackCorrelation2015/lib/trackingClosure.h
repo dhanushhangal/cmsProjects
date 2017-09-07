@@ -250,7 +250,7 @@ trackingClosure::~trackingClosure(){
 }
 
 void trackingClosure::DrawClosure(TString name, TString type){
-	float xmin =-3 , xmax=3 , ymin = 0.85, ymax= 1.15;
+	float xmin =-2.7 , xmax=2.7 , ymin = 0.0, ymax= 2;
 	int ana_ntrkpt=anaConfig::ntrkpt;
 	int ana_ncent=anaConfig::ncent;
 	float* ana_trkpt = anaConfig::trkpt;
@@ -277,7 +277,7 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			hcre= (TH1F*)cre->hist(i,j)->ProjectionX();	
 			hgen->Rebin();
 			hrec->Rebin(); hcre->Rebin();
-			hgen->SetAxisRange(xmin, xmax , "X");
+			hcre->GetXaxis()->SetTitle("#eta_{track}");
 			pd=ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j), 1);
 			ll->DrawLine(xmin, 1, xmax,1);
 			ll->DrawLine(xmin, 1.05, xmax,1.05);
@@ -289,8 +289,9 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			pd->cd(1);
 			ut->centLabel(j);
 		}		
-		if(name !="") c[i][0]->SaveAs(name+Form("_trkClosure_eta_%d",i)+"."+type);
+		if(name !="") c[i][0]->SaveAs("TrackingEfficiency_Eta_"+name+Form("_%d",i)+"."+type);
 	}
+	xmin =-3.2 , xmax=3.2 , ymin = 0.0, ymax= 2;
 	for(int i=0;i<ana_ntrkpt ; ++i){
 		c[i][1]= new TCanvas(Form("c_%d_1",i),"", 1200,600);
 		c[i][1]->Divide(4,1,0,0);
@@ -302,7 +303,7 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			hgen->Rebin();
 			hrec->Rebin();
 			hcre->Rebin();
-			hgen->SetAxisRange(xmin, xmax , "X");
+			hcre->GetXaxis()->SetTitle("#phi_{track}");
 			pd=ratioPlot(hgen, hcre, hrec,xmin, xmax, ymin, ymax, !(ana_ncent-1-j));
 			ll->DrawLine(xmin, 1, xmax,1);
 			ll->DrawLine(xmin, 1.05, xmax,1.05);
@@ -314,8 +315,8 @@ void trackingClosure::DrawClosure(TString name, TString type){
 			pd->cd(1);
 			ut->centLabel(j);
 		}		
-		ut->cent4Labels(c[i][1]);
-		if(name !="") c[i][1]->SaveAs(name+Form("_trkClosure_phi_%d",i)+"."+type);
+		//ut->cent4Labels(c[i][1]);
+		if(name !="") c[i][1]->SaveAs("TrackingEfficiency_Phi_"+name+Form("_%d",i)+"."+type);
 	}
 
 	TH1F* closure[4];
