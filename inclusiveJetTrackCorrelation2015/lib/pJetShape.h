@@ -3,7 +3,7 @@
 
 class pJetShape: public TCanvas{
 	public :
-		pJetShape(TString name, TString title="", float w=2500, float h=1600): TCanvas(name,title, w, h){
+		pJetShape(TString name, TString title="", float w=2000, float h=1000): TCanvas(name,title, w, h){
 			c=(TPad*)gPad;
 			c->SetMargin(0.2, 0.05, 0.25, 0.2);
 			c->Divide(5,2,0,0);
@@ -23,7 +23,7 @@ class pJetShape: public TCanvas{
 		void xAxisSetup(TGaxis *);
 		void yAxisSetup(TAxis *);
 		void yAxisSetup(TGaxis *);
-		void drawLabels(TGaxis *);
+		void drawLabels();
 
 	public :
 		TPad * c;
@@ -104,6 +104,7 @@ void pJetShape::draw(){
 void pJetShape::drawLabels(){
 	c->cd(1);
 	tx->SetTextFont(63);
+	tx->SetTextSize(30);
 	tx->SetTextSizePixels(20);
 	tx->SetLineColor(kWhite);
 	tx->DrawLatexNDC(0.3, 0.8, "CMS");
@@ -174,4 +175,26 @@ pJetShape::~pJetShape(){
 	delete axis_y;
 	//	delete [] st;
 	//	delete [] ratio;
+}
+
+void pParticleYield::drawLabels(){
+	c->cd(1);
+	tx->SetTextFont(63);
+	tx->SetTextSizePixels(20);
+	tx->SetLineColor(kWhite);
+	tx->DrawLatexNDC(0.3, 0.8, "CMS");
+	tx->SetTextFont(53);
+	tx->DrawLatexNDC(0.45, 0.8, "Preliminary");
+
+	tx->SetLineColor(kBlack);
+	tx->SetTextFont(63);
+	tx->DrawLatexNDC(0.28, 0.87, "pp reference");
+	c->cd(2);
+	tx->DrawLatexNDC(0.08, 0.87, "PbPb Cent.50-100%");
+	c->cd(3);
+	tx->DrawLatexNDC(0.08, 0.87, "PbPb Cent.30-50%");
+	c->cd(4);
+	tx->DrawLatexNDC(0.08, 0.87, "PbPb Cent.10-30%");
+	c->cd(5);
+	tx->DrawLatexNDC(0.08, 0.87, "PbPb Cent.0-10%");
 }

@@ -31,8 +31,8 @@ class stackHist{
 		{
 			st_name = name;
 			hst = new THStack(name, title);	
-			hst_up = new THStack(name+"_up", title+"_diff");	
-			hst_down = new THStack(name+"_down", title+"_diff");	
+			hst_up = new THStack(name+"_up", title);	
+			hst_down = new THStack(name+"_down", title);	
 			hist_sum = NULL;
 			color_v = NULL;
 			xmin =0; ymin =0; xmax =1; ymax =1;
@@ -52,8 +52,8 @@ class stackHist{
 		void addHist(TH1** h ,int num, float *weight = NULL);
 		void addDiff(TH1** h ,int num, float *weight = NULL);
 		TH1* sumOver();
-		int drawStack(TString opt ="", TString addOpt = "hist");
-		int drawDiff(TString opt ="", TString addOpt = "hist");
+		TH1* drawStack(TString opt ="", TString addOpt = "hist");
+		TH1* drawDiff(TString opt ="", TString addOpt = "hist");
 		void stackConfig(THStack* hstt);
 		void setTitleSize(float, TString axis="x");
 		void setLabelSize(float, TString axis="x");
@@ -125,7 +125,7 @@ TH1* stackHist::sumOver(){
 	return hist_sum;
 }
 
-int stackHist::drawStack(TString opt ="", TString addOpt ){
+TH1* stackHist::drawStack(TString opt ="", TString addOpt ){
 	setFillColor();
 	if(opt == ""){
 		for(auto it = hist_trunk.begin(); it !=hist_trunk.end(); ++it){
@@ -145,10 +145,10 @@ int stackHist::drawStack(TString opt ="", TString addOpt ){
 	hst->SetMinimum(ymin);
 	hst->SetMaximum(ymax);
 	hst->Draw();
-	return hist_trunk.size();
+	return hst->GetHistogram();
 }
 
-int stackHist::drawDiff(TString opt ="", TString addOpt = "hist"){
+TH1* stackHist::drawDiff(TString opt ="", TString addOpt = "hist"){
 	setFillColor();
 	if(opt == ""){
 		for(auto it = hist_trunk_up.begin(); it !=hist_trunk_up.end(); ++it){
@@ -178,7 +178,7 @@ int stackHist::drawDiff(TString opt ="", TString addOpt = "hist"){
 	hst_up->SetMaximum(ymaxd);
 	hst_up->Draw();
 	hst_down->Draw("same");
-	return hist_trunk_up.size();
+	return hst_up->GetHistogram();
 }
 
 void stackHist::stackConfig(THStack* hstt){

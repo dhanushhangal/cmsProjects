@@ -18,9 +18,11 @@ class xthf3 {
 		xthf3(TString name, TString ztitle, int nxbin, float xmin,float xmax,int nybin, float ymin, float ymax,\
 				int nzbin, float zmin, float zmax);
 		void createHist(int nxbin, float xmin,float xmax,int nybin, float ymin, float ymax);
+		void init_setup(int nzbin, float *zbin1);
 		void ztitle_setup();
 		void RebinZ(int nbin, float *bins);
 		int Fill(float x, float y, float z, float wit = 1);
+		void Write();
 		TH2F* hist(int z);
 	public :
 		TH2F** hf3;
@@ -37,12 +39,16 @@ xthf3::xthf3(TString name, TString title, int nxbin, float xmin,float xmax,int n
 	htitle(title)
 {
 	np = 1;
+init_setup(int nzbin, float *zbin1){
+	createHist(nxbin, xmin, xmax, nybin, ymin,ymax);
+}
+
+void xthf3::init_setup(int nzbin, float *zbin1){
 	nhist = nzbin+1;
 	zbin = new float[nhist];
 	zbin[nhist-1] = zmax;
 	float binwidth  = (zmax-zmin)/nzbin;
 	ztitle_setup();
-	createHist(nxbin, xmin, xmax, nybin, ymin,ymax);
 }
 
 void xthf3::ztitle_setup(){
@@ -124,5 +130,10 @@ TH2F* xthf3::hist(int z){
 	else{
 		std::cout<<"hist out of the range!"<<std::endl;
 		return NULL;
+	}
+}
+void xthf3::Write(){
+	for(int i=0; i<nhist; ++i){
+		hf3[i]->Write();
 	}
 }

@@ -246,18 +246,22 @@ TH2D* jtShape::getSignal(TH2D* signalH2, TH2D* meH2, int njet, float sideMin, fl
 }
 
 TH1D* jtShape::drJetShape(TH2D* signal, TH1D* drDist, float weight, TString opt){
-	drIntegral(signal, drDist , opt);
+	TH1D* drArea = drIntegral(signal, drDist , opt);
 	float cont;
 	float error;
 	float width;
-	for(int i=1; i<drDist->GetNbinsX();i++){
+	for(int i=1; i<drDist->GetNbinsX()+1;i++){
 		cont = drDist->GetBinContent(i);
 		error= drDist->GetBinError(i);
 		width= drDist->GetBinWidth(i);
 		drDist->SetBinContent(i, cont/width);
 		drDist->SetBinError(i, error/width);
+
+		cont = drArea->GetBinContent(i);
+		drArea->SetBinContent(i, cont/width);
+//		drArea->SetBinError(i, 0);
 	}
-	return drDist;
+	return drArea;
 }
 
 TH1D* jtShape::drIntegral(TH2D* signal, TH1D* drDist, TString opt){	
@@ -273,7 +277,7 @@ TH1D* jtShape::drIntegral(TH2D* signal, TH1D* drDist, TString opt){
 		for(int jy=0; jy<signal->GetNbinsY(); jy++){
 			dr = sqrt( pow(signal->GetXaxis()->GetBinCenter(jx),2) +\
 					pow(signal->GetYaxis()->GetBinCenter(jy),2));
-			drCounts->Fill(dr);
+			drCounts->Fill(dr); // get how many bins in the dr region
 			float xwidth = signal->GetXaxis()->GetBinWidth(jx);
 			float ywidth = signal->GetYaxis()->GetBinWidth(jy);
 			//here is f(x,y)dxdy:
@@ -292,6 +296,8 @@ TH1D* jtShape::drIntegral(TH2D* signal, TH1D* drDist, TString opt){
 	}
 
 	//	drDist->Divide(drCounts);
+	// convert the counts into the ring area distribution along the ring radius:
+	drCounts->Scale((signal->GetXaxis()->GetBinWidth(1))*(signal->GetYaxis()->GetBinWidth(1)));
 	return drCounts;
 }
 
