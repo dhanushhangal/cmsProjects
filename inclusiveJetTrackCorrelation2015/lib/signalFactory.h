@@ -22,7 +22,8 @@ class signalFactory {
 		void getSignal(TString name, TString hname = "signal");
 		void histConfig(TH1D* h);
 		void Write();
-		TH1D* integralGeoCorrection(TH1D* h);
+		void debugPlot();
+		//TH1D* integralGeoCorrection(TH1D* h);
 	public : 
 		//convention: z-axis for tracks and w-axis for cent;
 		xthd4 * signal; 
@@ -38,6 +39,9 @@ class signalFactory {
 		int nhist;
 		TLine tl;
 		TString sname;
+		int ymin, ymax, xmin, xmax;
+		float etamin = -1, etamax=1, phimin = -1, phimax=1;
+		float phiSmin = 1.2, phiSmax=1.8;// sideBand region in dphi 
 };
 
 void signalFactory::readSignal(TString name, TString title, TFile *f , int nz1, float *zbin1, int nw1, float *wbin1){
@@ -50,9 +54,6 @@ void signalFactory::readMixing(TString name, TString title, TFile *f , int nz1, 
 
 void signalFactory::getSignal(TString name, TString hname){
 	sname = name;
-	int ymin, ymax, xmin, xmax;
-	float etamin = -1, etamax=1, phimin = -1, phimax=1;
-	float phiSmin = 1.2, phiSmax=1.8;// sideBand region in dphi 
 	const double xdrbins[16] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1., 1.2};
 	TH2D** sig;
 	sig = new TH2D*[4*(signal->nz-1)];
@@ -70,7 +71,8 @@ void signalFactory::getSignal(TString name, TString hname){
 	float xbinwidth = signal->hist(0,0)->GetXaxis()->GetBinWidth(1);
 	float ybinwidth = signal->hist(0,0)->GetYaxis()->GetBinWidth(1);
 	TString stmp; 
-TH1D* geo;
+	TH1D* drHist = new TH1D("drHist","", 15, xdrbins);
+	TH1D* geoCorr = jts.drGeoTest(signal->hist(0,0), drHist);
 
 	for(int i=0; i<signal->nz-1; ++i){
 		for(int j=0; j<4; ++j){
@@ -82,7 +84,7 @@ TH1D* geo;
 			sig[i*4+j] = jts.getSignal((TH2D*)signal->hist(i,j), (TH2D*) mixing->hist(i,j),1, 1.5, 2.5);
 			stmp = hname+Form("_%d_%d", i,j);
 			sig[i*4+j]->SetName(stmp);
-			geo=(TH1D*) jts.drJetShape(sig[i*4+j],signal_dr[i*4+j]);
+			jts.drJetShape(sig[i*4+j],signal_dr[i*4+j]);
 			stmp = hname+Form("_deta_%d_%d", i,j);
 			signal_deta[i*4+j]=(TH1D*)sig[i*4+j]->ProjectionX(stmp,ymin,ymax,"e");
 			signal_deta[i*4+j]->Scale(ybinwidth);
@@ -98,6 +100,7 @@ TH1D* geo;
 			signal_dr  [i*4+j]->Write();
 			stmp = hname+Form("_drGeo_%d_%d", i, j);
 			signal_drGeo[i*4+j]=(TH1D*) signal_dr[i*4+j]->Clone(stmp);
+			signal_drGeo[i*4+j]->Multiply(geoCorr);
 			stmp = hname+Form("_sideBand_%d_%d", i,j);
 			signal_sideBand[i*4+j]=(TH1D*)sig[i*4+j]->ProjectionX(stmp,phiSmin,phiSmax,"e");
 			signal_sideBand[i*4+j]->Scale(ybinwidth);
@@ -108,8 +111,12 @@ TH1D* geo;
 	//		signal_ratio[i*4+j]->Divide(signal_area[i*4+j]);
 		}
 	}
-	TH1D* geoCorr = integralGeoCorrection(geo);
-	TCanvas *c_deta = new TCanvas(name+"_deta_getSignal", "", 1600, 2500);
+
+	debugPlot();
+}
+
+void signalFactory::debugPlot(){
+	TCanvas *c_deta = new TCanvas(sname+"_deta_getSignal", "", 1600, 2500);
 	c_deta->Divide(4, signal->nz-1, 0, 0);
 	for(int i=0; i<signal->nz-1; ++i){
 		for(int j=0; j<4; ++j){
@@ -119,8 +126,8 @@ TH1D* geo;
 			tl.DrawLine(etamin, 0, etamax, 0);
 		}
 	}
-	c_deta->SaveAs(name+"_deta.png");
-	TCanvas *c_dphi = new TCanvas(name+"_dphi_getSignal", "", 1600, 2500);
+	c_deta->SaveAs(sname+"_deta.png");
+	TCanvas *c_dphi = new TCanvas(sname+"_dphi_getSignal", "", 1600, 2500);
 	c_dphi->Divide(4, signal->nz-1, 0, 0);
 	for(int i=0; i<signal->nz-1; ++i){
 		for(int j=0; j<4; ++j){
@@ -130,8 +137,8 @@ TH1D* geo;
 			tl.DrawLine(phimin, 0, phimax, 0);
 		}
 	}
-	c_dphi->SaveAs(name+"_dphi.png");
-	TCanvas *c_dr = new TCanvas(name+"_dr_getSignal", "", 1600, 2500);
+	c_dphi->SaveAs(sname+"_dphi.png");
+	TCanvas *c_dr = new TCanvas(sname+"_dr_getSignal", "", 1600, 2500);
 	c_dr->Divide(4, signal->nz-1, 0, 0);
 	for(int i=0; i<signal->nz-1; ++i){
 		for(int j=0; j<4; ++j){
@@ -140,14 +147,13 @@ TH1D* geo;
 			signal_dr[i*4+j]->SetAxisRange(0,.9, "X");
 			signal_dr[i*4+j]->Draw();
 			histConfig((TH1D*) signal_drGeo[i*4+j]);
-			signal_drGeo[i*4+j]->Multiply(geoCorr);
 			signal_drGeo[i*4+j]->SetMarkerColor(kRed);
 			signal_drGeo[i*4+j]->Draw("same");
 			//tl.DrawLine(xmin, 0, xmax, 0);
 		}
 	}
-	c_dr->SaveAs(name+"_dr.png");
-	TCanvas *c_side = new TCanvas(name+"_side_getSignal", "", 1600, 2500);
+	c_dr->SaveAs(sname+"_dr.png");
+	TCanvas *c_side = new TCanvas(sname+"_side_getSignal", "", 1600, 2500);
 	c_side->Divide(4, signal->nz-1, 0, 0);
 	for(int i=0; i<signal->nz-1; ++i){
 		for(int j=0; j<4; ++j){
@@ -157,7 +163,7 @@ TH1D* geo;
 			tl.DrawLine(etamin, 0, etamax, 0);
 		}
 	}
-	c_side->SaveAs(name+"_sideCheck.png");
+	c_side->SaveAs(sname+"_sideCheck.png");
 
 	/*
 	   TCanvas *c_ratio = new TCanvas(name+"_ratio_getSignal", "", 1600, 2500);
@@ -173,20 +179,6 @@ TH1D* geo;
 	}
 	c_ratio->SaveAs(name+"_ratio.png");
 
-	TCanvas *c_area = new TCanvas(name+"_area_getSignal", "", 1600, 2500);
-	c_area->Divide(4, signal->nz-1, 0, 0);
-	for(int i=0; i<signal->nz-1; ++i){
-	for(int j=0; j<4; ++j){
-	c_area->cd((i+1)*4-j);
-	histConfig((TH1D*) signal_area[i*4+j]);
-	signal_area[i*4+j]->SetAxisRange(0,.6, "X");
-	signal_area[i*4+j]->Draw();
-	area_ideal->SetLineColor(kRed);
-	area_ideal->Draw("same");
-	//tl.DrawLine(xmin, 0, xmax, 0);
-	}
-	}
-	c_area->SaveAs(name+"_area.png");
 	*/
 	//delete [] sig;
 	//delete [] signal_deta;
@@ -211,6 +203,7 @@ void signalFactory::histConfig(TH1D* h){
 	//	h->SetMarkerColor(kBlue);
 }
 
+/*
 TH1D* signalFactory::integralGeoCorrection(TH1D* h){
 	TH1D* area_ideal = (TH1D*)h->Clone("area_ideal");
 	for(int i=1; i<h->GetNbinsX()+1; ++i){
@@ -232,4 +225,5 @@ TH1D* signalFactory::integralGeoCorrection(TH1D* h){
 	area_ideal->Divide(h);
 	return area_ideal;
 }
+*/
 #endif

@@ -17,9 +17,10 @@ class jtShape {
 		TH2D* getSignal(TH2D* signalH2, TH2D* meH2, int njet, float sideMin, float sideMax);
 		TH2D* getV2Bkg(TH2D* signalH2, float sideMin=1.5 ,float sideMax = 2);
 		void smoothMixingTable(TH2D* mix);
-		TH1D* drJetShape(TH2D* signalh2, TH1D* drDisth1, float weight=1, TString opt ="e");
-		TH1D* drIntegral(TH2D* signalh2, TH1D* drDisth1, TString opt ="e");
-
+		void drJetShape(TH2D* signalh2, TH1D* drDisth1, float weight=1, TString opt ="e");
+		void drIntegral(TH2D* signalh2, TH1D* drDisth1, TString opt ="e");
+		// testing the bin scheme affect on the phase space and return the correction histogram.
+		TH1D* drGeoTest(TH2D* signalh2, TH1D* drDisth1); 
 
 
 	private : 
@@ -245,8 +246,8 @@ TH2D* jtShape::getSignal(TH2D* signalH2, TH2D* meH2, int njet, float sideMin, fl
 	return signal;
 }
 
-TH1D* jtShape::drJetShape(TH2D* signal, TH1D* drDist, float weight, TString opt){
-	TH1D* drArea = drIntegral(signal, drDist , opt);
+void jtShape::drJetShape(TH2D* signal, TH1D* drDist, float weight, TString opt){
+	drIntegral(signal, drDist , opt);
 	float cont;
 	float error;
 	float width;
@@ -257,14 +258,11 @@ TH1D* jtShape::drJetShape(TH2D* signal, TH1D* drDist, float weight, TString opt)
 		drDist->SetBinContent(i, cont/width);
 		drDist->SetBinError(i, error/width);
 
-		cont = drArea->GetBinContent(i);
-		drArea->SetBinContent(i, cont/width);
-//		drArea->SetBinError(i, 0);
 	}
-	return drArea;
+	return ;
 }
 
-TH1D* jtShape::drIntegral(TH2D* signal, TH1D* drDist, TString opt){	
+void jtShape::drIntegral(TH2D* signal, TH1D* drDist, TString opt){	
 	//in this integral, we suppose that the distribution in the TH2D* signal has been normalized by the 
 	//bin size ( which can be represented as f(x,y)), then the integral should be f(x,y)dxdy (we'll add 
 	//the dxdy automatically).
@@ -297,9 +295,41 @@ TH1D* jtShape::drIntegral(TH2D* signal, TH1D* drDist, TString opt){
 
 	//	drDist->Divide(drCounts);
 	// convert the counts into the ring area distribution along the ring radius:
-	drCounts->Scale((signal->GetXaxis()->GetBinWidth(1))*(signal->GetYaxis()->GetBinWidth(1)));
-	return drCounts;
+	//drCounts->Scale((signal->GetXaxis()->GetBinWidth(1))*(signal->GetYaxis()->GetBinWidth(1)));
+	return ;
 }
 
+TH1D* jtShape::drGeoTest(TH2D* signal, TH1D* drDist){
+	std::cout<<"running the phase space testing ..."<<std::endl;
+	TString temp = drDist->GetName();
+	TH1D* drCounts = (TH1D*) drDist->Clone(temp+"_counts");
+	float dr;
+	for(int jx=0; jx<signal->GetNbinsX(); jx++){
+		for(int jy=0; jy<signal->GetNbinsY(); jy++){
+			dr = sqrt( pow(signal->GetXaxis()->GetBinCenter(jx),2) +\
+					pow(signal->GetYaxis()->GetBinCenter(jy),2));
+			drCounts->Fill(dr); // get how many bins in the dr region
+		}
+	}
+	drCounts->Scale((signal->GetXaxis()->GetBinWidth(1))*(signal->GetYaxis()->GetBinWidth(1)));
+
+	TH1D* area_ideal = (TH1D*)drCounts->Clone("area_ideal");
+	for(int i=1; i<drCounts->GetNbinsX()+1; ++i){
+		float r = area_ideal->GetBinCenter(i);
+		drCounts->SetBinContent(i, drCounts->GetBinContent(i)/drCounts->GetBinWidth(i));
+		area_ideal->SetBinContent(i, 2*r*TMath::Pi()); 
+	}
+	TCanvas* c = new TCanvas("c_geoCorrection", "", 800,600);
+	drCounts->SetStats(0);
+	drCounts->SetTitle("Geometry Correction");
+	drCounts->SetMarkerStyle(20);
+	drCounts->SetMarkerSize(0.8);
+	drCounts->Draw();
+	area_ideal->SetLineColor(kRed);
+	area_ideal->Draw("same");
+	c->SaveAs("phaseSpaceCorrection.png");
+	area_ideal->Divide(drCounts);
+	return area_ideal;
+}	
 
 #endif

@@ -17,7 +17,8 @@ void getParticleYield(){
 	float centbin[]= {0, 10, 30, 50, 100};
 	getGenGen_pb();
 	getGenGen_pp();
-	TFile *wf = TFile::Open("GenGen_ParticleYield_sub0.root", "recreate");
+	TFile *wf = TFile::Open("GenGen_ParticleYield.root", "recreate");
+	/*
 	auto sf = new signalFactory();
 	sf->signal->init_setup(9, trkbin, 4, centbin);
 	sf->signal->hd4= new TH2D*[40];
@@ -32,6 +33,7 @@ void getParticleYield(){
 		}
 	}
 	sf->getSignal("GenGenParticleYield");
+	*/
 	//sf->Write();
 
 	float ppcent[] = {0,100};
@@ -43,7 +45,7 @@ void getParticleYield(){
 	for(int i=0; i<9; ++i){
 		sf_pp->signal->hd4[i]=(TH2D*)GenGen_MC_pp_sig[i];
 		sf_pp->mixing->hd4[i]=(TH2D*)GenGen_MC_pp_mix[i];
-		TString tmp = sf->signal->ztitle.at(i);
+		TString tmp = sf_pp->signal->ztitle.at(i);
 		sf_pp->signal->hd4[i]->SetTitle(tmp);
 	}
 	sf_pp->getSignal("GenGenParticleYield");
