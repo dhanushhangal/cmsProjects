@@ -46,7 +46,7 @@ class padPolisher{
 };
 
 void padPolisher::cent4Labels(TCanvas *c, float x, float y){
-	TString l[4]= {"0-10%", "10-30%","30-50%","50-100%"};
+	TString l[4]= {"Cent. 0-10%", "Cent. 10-30%","Cent. 30-50%","Cent. 50-100%"};
 	for(int i=0;i<4;++i){
 		c->cd(4-i);
 		tx->DrawLatexNDC(x,y,l[i]);

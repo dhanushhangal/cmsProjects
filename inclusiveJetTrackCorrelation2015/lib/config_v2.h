@@ -6,6 +6,7 @@
 #include "inputTree.h"
 #include "dataTree.h"
 #include "xthf4.h"
+#include "xTree.h"
 // old cymbal correction
 //#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
 // fine bin cymbal correction
@@ -38,6 +39,9 @@ namespace jetTrack{
 		float trk_corr(dataTree *t, int j ){
 			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
 		}
+		float trk_corr(xTree *t, int j ){
+			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
+		}
 	}
 
 	namespace trackingCorrConfig{
@@ -56,9 +60,9 @@ namespace jetTrack{
 		float cent_out_c [18]; 
 		int ntrkpt_out = ntrkpt_in;
 		float* trkpt_out_c= trkpt_in_c;
-//
-//----------------------------------------------------------------
-//
+		//
+		//----------------------------------------------------------------
+		//
 		float * cent_in = cent_in_c;
 		float * cent_out = cent_out_c;
 		float* trkpt_in= trkpt_in_c;
@@ -119,7 +123,7 @@ namespace jetTrack{
 		if ( trkNHit< 11) return 1;
 		if ( trkPtError/trkPt>=0.1) return 1;
 		if ( trkPtError/trkPt>=0.3) return 1;
-//		if (TMath::Abs(trkEta)>1.6) return 1; // check mid-rapidity
+		//		if (TMath::Abs(trkEta)>1.6) return 1; // check mid-rapidity
 		if ( TMath::Abs(trkDz/trkDzError) >=3) return 1;
 		if ( TMath::Abs(trkDxy/trkDxyError) >=3) return 1;
 		float Et = (pfHcal+pfEcal)/TMath::CosH(trkEta);
@@ -140,6 +144,12 @@ namespace jetTrack{
 				t->trkDxy->at(j), t->trkDxyError->at(j), t->trkNHit->at(j), t->trkChi2->at(j),
 				t->trkNdof->at(j), t->trkNlayer->at(j));
 	}
+	bool trackQualityCuts(xTree * t , int j){
+		return trackQualityCutsImp(t->highPurity->at(j), t->pfHcal->at(j), t->pfEcal->at(j),
+				t->trkPt->at(j), t->trkPtError->at(j), t->trkEta->at(j), t->trkDz->at(j), t->trkDzError->at(j),
+				t->trkDxy->at(j), t->trkDxyError->at(j), t->trkNHit->at(j), t->trkChi2->at(j),
+				t->trkNdof->at(j), t->trkNlayer->at(j));
+	}
 	bool eventCutsImp(int HBHENoiseFilterResultRun2Loose, int pcollisionEventSelection, int pprimaryVertexFilter, int phfCoincFilter3, float vz){
 		if ( HBHENoiseFilterResultRun2Loose ==0) return 1;
 		if ( pcollisionEventSelection ==0) return 1;
@@ -154,10 +164,28 @@ namespace jetTrack{
 	bool eventCuts(dataTree *t){
 		return eventCutsImp(t->HBHENoiseFilterResultRun2Loose, t->pcollisionEventSelection, t->pprimaryVertexFilter, t->phfCoincFilter3, t->vz);
 	}
+	bool eventCuts(xTree *t){
+		if(t->isMC && !(t->pthat<80)) return 1;
+		if( t->vz>15 || t->vz<-15) return 1;
+		if(t->ispp){
+			if(!(t->collisionEventSelection)) return 1;
+			if(!(t->HBHEFilter)) return 1;
+		}
+		else {
+			if(!(t->HBHEFilter)) return 1;
+			if(!(t->collisionEventSelection)) return 1;
+			if(!(t->phfCoincFilter)) return 1;
+			if(!(t->pprimaryVertexFilter)) return 1;
+		}
+		return 0;
+	}
 
 	bool genParticleCuts(inputTree *t,int j){
 		if (t->chg->at(j)==0) return 1;
-//		if (TMath::Abs(t->eta->at(j))>1.6) return 1; // check mid-rapidity
+		//		if (TMath::Abs(t->eta->at(j))>1.6) return 1; // check mid-rapidity
+		return 0;
+	}
+	bool jetCut(xTree *t,int j){
 		return 0;
 	}
 }

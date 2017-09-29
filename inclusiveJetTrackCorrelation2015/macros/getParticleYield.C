@@ -15,9 +15,9 @@ void getParticleYield(){
 	*/
 	float trkbin[] = {0.7, 1, 2, 3, 4, 8, 12, 16, 20, 999};
 	float centbin[]= {0, 10, 30, 50, 100};
-	getGenGen_pb();
+	getGenGen_pb_sub0();
 	getGenGen_pp();
-	TFile *wf = TFile::Open("GenGen_ParticleYield.root", "recreate");
+	TFile *wf = TFile::Open("GenGen_ParticleYield_sub0.root", "recreate");
 	/*
 	auto sf = new signalFactory();
 	sf->signal->init_setup(9, trkbin, 4, centbin);

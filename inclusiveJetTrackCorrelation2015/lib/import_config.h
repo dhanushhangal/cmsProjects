@@ -3,6 +3,9 @@
 #include "jtShape.h"
 #endif
 
+TH2D* pb_sig[9][5];
+TH2D* pb_me [9][5];
+TH1D* jet_pt[5];
 namespace kurt_reg{
 	TFile *GenGen_MC_pp_f ;
 	TFile *RecRec_MC_pp_f ;
@@ -11,9 +14,13 @@ namespace kurt_reg{
 	TFile *GenGen_MC_pb_f ;
 	TFile *RecRec_MC_pb_f ;
 	TFile *GenGen_MC_pb_f_sub0 ;
+	TFile *data_pb_f ;
 	void loadConfig(){
 		std::cout<<"loading kurt's configuration.."<<std::endl;
 		//pp input 
+		data_pb_f =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/PbPb_5TeVData_fixMix_fineBinTrkCorrs_withTrkCorrEtaSymmV2_finalJFFs.root");	
+		//data_pb_f =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/PbPb_5TeVData_fineBinTrkCorrs_withMix_finalJFFs.root");	
+		//data_pb_f =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/PbPb_Data_withMix_CymbalTune_fullCymbalCorrs_inclJetBinning_withPtWeightME.root");	
 		GenGen_MC_pp_f_calo5jet =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/pp_5TeVMC_GenGen_PFJets_R0p5_finalJFF_noMix.root");	
 		GenGen_MC_pp_f_calo3jet =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/pp_5TeVMC_GenGen_PFJets_R0p3_finalJFF_noMix.root");	
 		GenGen_MC_pp_f =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/pp_Pythia6MC_GenGen_withMix_inclJetBinning_finalJFFs.root");	
@@ -21,7 +28,7 @@ namespace kurt_reg{
 		// pb mc input 
 		GenGen_MC_pb_f =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/PbPb_5TeVMC_withMix_GenGen_CymbalTune_fullCymbalCorrs_inclJetBinning.root");	
 		RecRec_MC_pb_f =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/PbPb_5TeVMC_withMix_RecoReco_CymbalTune_fullCymbalCorrs_inclJetBinning.root");	
-		GenGen_MC_pb_f_sub0 =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/PbPb_5TeVMC_GenGenSube0_fineBinTrkCorrs_withTrkCorrEtaSymmV2_noJFF_noMix.root");	
+		//GenGen_MC_pb_f_sub0 =TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/PbPb_5TeVMC_GenGenSube0_fineBinTrkCorrs_withTrkCorrEtaSymmV2_noJFF_noMix.root");	
 	}
 	TString trk_tag[] = {"TrkPt0p7", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt20","TrkPt999"};
 	TString cent_tag[]= {"Cent0","Cent10","Cent30","Cent50","Cent70","Cent100"};
@@ -138,38 +145,120 @@ namespace kurt_reg{
 		}
 	}
 
-	void getParticleYield_MC_GenGen_pb(TString name){
-		const double xdrbins[16] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1., 1.2};
-		getGenGen_pb();
-		getGenGen_pp();
-		TFile *wf = TFile::Open(name, "recreate");
-		TH1D* py_dr[9][5];
-		TH2D* sig;
-		jtShape* jtT = new jtShape();
-		for(int i=0;i<9; ++i){
-			for(int j=0; j<4; ++j){
-				py_dr[i][j]= new TH1D(Form("particleYield_pb_%d_%d",i, j), "",15,xdrbins);
-				//GenGen_MC_pb_sig[0][0]->Draw("colz");
-			//	sig =jtT->getSignal((TH2D*)GenGen_MC_pb_sig[i][j],\
-			//			(TH2D*) GenGen_MC_pb_mix[i][j], (TH1D*)GenJet_pb[j], 1.5, 2.5);	
-			//	jtT->drJetShape(sig,py_dr[i][j]);
-				sig =jtT->getSignal((TH2D*)GenGen_MC_pb_sig[i][j],\
-						(TH2D*) GenGen_MC_pb_mix[i][j],1, 1.5, 2.5);	
-				jtT->drJetShape(sig,py_dr[i][j]);
-				py_dr[i][j]->Write();
+	void getPbData(){
+		TString stmp;
+		float trkBinWidth[] = {0.3, 1, 1,1, 4, 4, 4, 4, 50}; 
+		for(int j=0; j<5; ++j){
+			stmp = "Data_all_jets_corrpT"+cent_tag[j]+"_"+cent_tag[j+1]+"_Pt100_Pt1000";
+			jet_pt[j]= (TH1D*)data_pb_f->Get(stmp);
+			for(int i=0;i<9; ++i){
+				stmp = "Data_hJetTrackME"+cent_tag[j]+"_"+cent_tag[j+1]+"_Pt100_Pt1000_"
+					+trk_tag[i]+"_"+trk_tag[i+1];
+				pb_me[i][j]=(TH2D*)data_pb_f->Get(stmp);
+				stmp = "Data_hJetTrackSignalBackground"+cent_tag[j]+"_"+cent_tag[j+1]+"_Pt100_Pt1000_"
+					+trk_tag[i]+"_"+trk_tag[i+1];
+				pb_sig[i][j]=(TH2D*)data_pb_f->Get(stmp);
+				pb_sig[i][j]->Scale(1./trkBinWidth[i]);
 			}
-			//py_dr[i][4]= new TH1D(Form("particleYield_pp_%d",i), "",15,xdrbins);
-			////sig =jtT->getSignal((TH2D*)GenGen_MC_pp_sig[i],\
-			////		(TH2D*) GenGen_MC_pp_mix[i], (TH1D*)GenJet_pp, 1.5, 2.5);	
-			//sig =jtT->getSignal((TH2D*)GenGen_MC_pp_sig[i],\
-			//		(TH2D*) GenGen_MC_pp_mix[i], 1, 1.5, 2.5);	
-			//jtT->drJetShape(sig,py_dr[i][4]);
-			//py_dr[i][4]->Write();
+		}
+
+		jet_pt[3]->Add(jet_pt[4]);
+		for(int i=0;i<9; ++i){
+			//combined the last two bins together
+			pb_sig[i][3]->Add(pb_sig[i][4]);
+			for(int j=0; j<4; ++j){
+				//adding the cent50-70 and cent70-100 together:
+				pb_sig[i][j]->Scale(1.0/jet_pt[j]->Integral());
+			}
 		}
 	}
+
 }
 
 namespace hallie_reg{
-	TString trk_tag[] = {"TrkPt0p7", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt20","TrkPt999"};
-	TString cent_tag[]= {"Cent0","Cent10","Cent30","Cent50","Cent70","Cent100"};
+	TFile * py_f = new TFile("/Users/tabris/Research/HIN_5.02TeV/JetTrack2016/results_plotting/Jet_Shapes.root");
+	TFile * js_f = new TFile("/Users/tabris/Research/HIN_5.02TeV/JetTrack2016/results_plotting/Jet_Shapes.root");
+	TString trk_tag[] = {"TrkPt07", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt20","TrkPt300"};
+	TString cent_tag[]= {"Cent0","Cent10","Cent30","Cent50","Cent100"};
+
+	TH1D* py_dr[9][5];
+	TH1D* py_dr_err[9][5];
+	TH1D* py_dr_all[5];
+	TH1D* py_dr_err_all[5];
+	TH1D* integral[5];
+	TH1D* integral_syst[5];
+	TH1D* diff[4];
+	TH1D* diff_syst[4];
+	TString tmp;
+	void getPY(){
+		for(int i=0;i<9; ++i){
+			tmp = "JetShape2_Yield_BkgSub_Inclusive_pp_"+
+				trk_tag[i]+"_"+trk_tag[i+1];
+			py_dr[i][4]=(TH1D*)py_f->Get(tmp);
+			tmp = "Jet_Shape_SystErr_pp_"+
+				trk_tag[i]+"_"+trk_tag[i+1];
+			py_dr_err[i][4]=(TH1D*)py_f->Get(tmp);
+			for(int j=0;j<4; ++j){
+				tmp = "JetShape2_Yield_BkgSub_Inclusive_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+
+					trk_tag[i]+"_"+trk_tag[i+1];
+				py_dr[i][j]=(TH1D*)py_f->Get(tmp);
+				tmp = "Jet_Shape_SystErr_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+
+					trk_tag[i]+"_"+trk_tag[i+1];
+				py_dr_err[i][j]=(TH1D*)py_f->Get(tmp);
+			}
+		}
+		for(int i=0;i<4; ++i){
+			tmp = "JetShape2_Yield_BkgSub_Inclusive_"+cent_tag[i]+"_"+cent_tag[i+1]+"_"+
+				trk_tag[9]+"_";
+			py_dr_all[i]=(TH1D*)py_f->Get(tmp);
+			tmp = "Jet_Shape_SystErr_"+cent_tag[i]+"_"+cent_tag[i+1]+"_"+
+				trk_tag[9]+"_";
+			py_dr_err_all[i]=(TH1D*)py_f->Get(tmp);
+			tmp = "Integral_PbPb"+cent_tag[i]+"_"+cent_tag[i+1];
+			integral[i]=(TH1D*)py_f->Get(tmp);
+			tmp = "Integral_PbPb_Syst"+cent_tag[i]+"_"+cent_tag[i+1];
+			integral_syst[i]=(TH1D*)py_f->Get(tmp);
+			tmp = "Integral_Diff_"+cent_tag[i]+"_"+cent_tag[i+1];
+			diff[i]=(TH1D*)py_f->Get(tmp);
+			tmp = "Integral_Diff_Syst"+cent_tag[i]+"_"+cent_tag[i+1];
+			diff_syst[i]=(TH1D*)py_f->Get(tmp);
+		}
+		integral[4]=(TH1D*)py_f->Get("Integral_pp");
+		integral_syst[4]=(TH1D*)py_f->Get("Integral_pp_Syst");
+		tmp = "JetShape2_Yield_BkgSub_Inclusive_pp_"+
+			trk_tag[9]+"_";
+		py_dr_all[4]=(TH1D*)py_f->Get(tmp);
+		tmp = "Jet_Shape_SystErr_pp_"+
+			trk_tag[9]+"_";
+		py_dr_err_all[4]=(TH1D*)py_f->Get(tmp);
+	}
+
+	TFile *bkgSub_f = TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/correlation/hallie/PbPb_Inclusive_Correlations.root");
+	TH2D* py[9][4];
+	TH2D* raw2D[9][4];
+	TH2D* mix[9][4];
+	TH2D* bkg[9][4];
+	TH2D* py_nobkgSub[9][4];
+	void get2DHist(){
+		for(int i=0;i<4; ++i){
+			for(int j=0;j<9; ++j){
+				tmp = "Yield_BkgSub_"+cent_tag[i]+"_"+cent_tag[i+1]+"_Pt100_Pt1000_"+
+					trk_tag[j]+"_"+trk_tag[j+1];
+				//				cout<<tmp<<endl;
+				py[j][i]=(TH2D*)bkgSub_f->Get(tmp);
+				tmp = "Raw_Yield_"+cent_tag[i]+"_"+cent_tag[i+1]+"_Pt100_Pt1000_"+
+					trk_tag[j]+"_"+trk_tag[j+1];
+				raw2D[j][i]=(TH2D*)bkgSub_f->Get(tmp);
+				tmp = "Mixed_Event_"+cent_tag[i]+"_"+cent_tag[i+1]+"_Pt100_Pt1000_"+
+					trk_tag[j]+"_"+trk_tag[j+1];
+				mix[j][i]=(TH2D*)bkgSub_f->Get(tmp);
+				tmp = "SummedBkg_"+cent_tag[i]+"_"+cent_tag[i+1]+"_Pt100_Pt1000_"+
+					trk_tag[j]+"_"+trk_tag[j+1];
+				bkg[j][i]=(TH2D*)bkgSub_f->Get(tmp);
+				tmp = "Yield_PbPb_"+cent_tag[i]+"_"+cent_tag[i+1]+"_Pt100_Pt1000_"+
+					trk_tag[j]+"_"+trk_tag[j+1];
+				py_nobkgSub[j][i]=(TH2D*)bkgSub_f->Get(tmp);
+			}
+		}
+	}
 }

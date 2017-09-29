@@ -14,7 +14,7 @@ class doublePad{
 			l2=new TLegend(0.38, 0.8, 0.9,0.95);
 			tx=new TLatex();
 		};
-		void addRatioPair(TH1F* hnum, TH1F* hden, Color_t color, TString leg1, TString leg2, TString legr="");
+		void addRatioPair(TH1* hnum, TH1* hden, Color_t color, TString leg1, TString leg2, TString legr="");
 		void Draw();
 		~doublePad();
 		void setRange(float, float , float y1=1, float y2=0, float y3=1, float y4=0);
@@ -24,19 +24,20 @@ class doublePad{
 		void putText(TString, float x=0.6, float=0.7, int n=1);
 	public:
 		TPad* hpad;
-		std::vector<TH1F*> hratio;
+		std::vector<TH1*> hratio;
 		std::vector<TString> hr_leg;
 		std::vector<TString> hleg;
-		std::vector<TH1F*> hist;
+		std::vector<TH1*> hist;
 		TLegend* l1;
 		TLegend* l2;
 		float xmin,xmax;
 		float y1min, y1max, y2min, y2max;
 		TString xtitle, y1title, y2title;
+		TH1 *h1frame, * h2frame;	
 		TLatex* tx;
 };
 
-void doublePad::addRatioPair(TH1F* hnum, TH1F* hden, Color_t color, TString leg1, TString leg2, TString legr){
+void doublePad::addRatioPair(TH1* hnum, TH1* hden, Color_t color, TString leg1, TString leg2, TString legr){
 	int cache1=0, cache2=0;
 	for(auto &it : hist){
 		if(it == hnum) cache1++; //test if cached
@@ -52,9 +53,10 @@ void doublePad::addRatioPair(TH1F* hnum, TH1F* hden, Color_t color, TString leg1
 	}
 	if(legr !="") hr_leg.push_back(legr);
 	else hr_leg.push_back(leg1+"/"+leg2);
-	hratio.push_back((TH1F*)hnum->Clone(Form("dc_ratio_%d",int(hratio.size()))));
+	hratio.push_back((TH1*)hnum->Clone(Form("dc_ratio_%d",int(hratio.size()))));
 	hratio.back()->Divide(hden);
 	hratio.back()->SetLineColor(color);
+	hratio.back()->SetMarkerStyle(20);
 	hratio.back()->SetMarkerColor(color);
 	hratio.back()->SetTitle("");
 }
@@ -77,16 +79,18 @@ void doublePad::Draw(){
 	}
 	if(y1min<y1max) hist[0]->SetAxisRange(y1min, y1max, "Y");
 	if(y2min<y2max)  hratio[0]->SetAxisRange(y2min, y2max, "Y");
+	h1frame = hist[0];
+	h2frame = hratio[0];
 	hist[0]->GetYaxis()->SetTitle(y1title);
 	hist[0]->SetStats(0);
 	for(auto &it: hist) it->Draw("same");
-	gPad->SetTicks(2,2);
+	gPad->SetTicks(1,1);
 	hpad->cd(2);
 	hratio[0]->SetStats(0);
 	hratio[0]->GetYaxis()->SetTitle(y2title);
 	hratio[0]->GetXaxis()->SetTitle(xtitle);
 	for(auto &it: hratio) it->Draw("same");
-	gPad->SetTicks(2,2);
+	gPad->SetTicks(1,1);
 }
 
 void doublePad::setRange(float x1, float x2, float y3=1, float y4=0, float y1=1, float y2=0 ){
@@ -106,7 +110,7 @@ void doublePad::drawLegend(){
 	hpad->cd(1);
 	l1->Draw();
 	hpad->cd(2);
-	l2->Draw();
+//	l2->Draw();
 }
 void doublePad::putText(TString txt, float x, float y, int n){
 	hpad->cd(n);

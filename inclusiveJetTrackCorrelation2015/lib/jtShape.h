@@ -7,6 +7,9 @@
 #include "TH1D.h"
 #include "TH2D.h"
 
+#ifndef doublePad_H
+#include "doublePad.h"
+#endif
 
 class jtShape {
 	public:
@@ -14,7 +17,7 @@ class jtShape {
 
 		jtShape();
 		TH2D* getSignal(TH2D* signalH2, TH2D* meH2, TH1D* jetDist, float sideMin=1.5, float sideMax=2);
-		TH2D* getSignal(TH2D* signalH2, TH2D* meH2, int njet, float sideMin, float sideMax);
+		TH2D* getSignal(TH2D* signalH2, TH2D* meH2, int njet, float sideMin, float sideMax, bool doSmoothME = true, bool doSub = true);
 		TH2D* getV2Bkg(TH2D* signalH2, float sideMin=1.5 ,float sideMax = 2);
 		void smoothMixingTable(TH2D* mix);
 		void drJetShape(TH2D* signalh2, TH1D* drDisth1, float weight=1, TString opt ="e");
@@ -181,9 +184,9 @@ TH2D* jtShape::getSignal(TH2D* signalH2, TH2D* meH2, TH1D* jetDist, float sideMi
 	return (TH2D*) getSignal(signalH2, meH2, int(jetDist->Integral()), sideMin, sideMax);
 }
 
-TH2D* jtShape::getSignal(TH2D* signalH2, TH2D* meH2, int njet, float sideMin, float sideMax){
-	bool doSmoothME = true;
-	bool doSub = true;
+TH2D* jtShape::getSignal(TH2D* signalH2, TH2D* meH2, int njet, float sideMin, float sideMax, bool doSmoothME, bool doSub){
+	//bool doSmoothME = true;
+	//bool doSub = true;
 	TH2D* mixing = (TH2D*)meH2->Clone("mixing");
 	TH2D* bkg;
 	TString hname = signalH2->GetName();
@@ -315,20 +318,54 @@ TH1D* jtShape::drGeoTest(TH2D* signal, TH1D* drDist){
 
 	TH1D* area_ideal = (TH1D*)drCounts->Clone("area_ideal");
 	for(int i=1; i<drCounts->GetNbinsX()+1; ++i){
-		float r = area_ideal->GetBinCenter(i);
-		drCounts->SetBinContent(i, drCounts->GetBinContent(i)/drCounts->GetBinWidth(i));
-		area_ideal->SetBinContent(i, 2*r*TMath::Pi()); 
+		float rlow = area_ideal->GetBinLowEdge(i);
+		float width = area_ideal->GetBinWidth(i);
+		float rup = rlow + width;
+		//drCounts->SetBinContent(i, drCounts->GetBinContent(i));
+		//area_ideal->SetBinContent(i, TMath::Pi()*(pow(rup,2)-pow(rlow,2))); 
+		drCounts->SetBinContent(i, drCounts->GetBinContent(i)/width);
+		area_ideal->SetBinContent(i, TMath::Pi()*(pow(rup,2)-pow(rlow,2))/width); 
 	}
-	TCanvas* c = new TCanvas("c_geoCorrection", "", 800,600);
-	drCounts->SetStats(0);
-	drCounts->SetTitle("Geometry Correction");
+	TCanvas* c = new TCanvas("c_geoCorrection", "", 600,800);
+	auto dp = new doublePad((TPad*)gPad);
+	dp->addRatioPair(area_ideal, drCounts, kBlue, "2#pir", "grids/#Deltar");
 	drCounts->SetMarkerStyle(20);
 	drCounts->SetMarkerSize(0.8);
-	drCounts->Draw();
 	area_ideal->SetLineColor(kRed);
-	area_ideal->Draw("same");
+	/*
+	TLegend* tl= new TLegend(0.2,0.7,0.4, 0.85);
+	tl->AddEntry(drCounts, "Ring Area/#Deltar");
+	tl->AddEntry(area_ideal, "2#pi r");
+	tl->SetLineColor(0);
+	area_ideal->SetStats(0);
+	drCounts->SetTitle("Geometry Correction");
+	area_ideal->Draw();
+	drCounts->Draw("same");
+	tl->Draw();
+	*/
+	
+	auto tl = new TLine();
+	tl->SetLineStyle(2);
+	dp->y2min=0.71; dp->y2max=1.29;
+	dp->xmin=0; dp->xmax=0.99;
+	dp->setXtitle("#Deltar");
+	dp->setYtitle("#DeltaS/#Deltar");
+	dp->Draw();
+	dp->drawLegend();
+	dp->putText("phase-space adjustment",0.4, 0.9, 2);
+	dp->hpad->cd(2);
+	tl->DrawLine(0, 1, 1, 1);
+	dp->h1frame->GetYaxis()->SetLabelSize(0.06);
+	dp->h1frame->GetYaxis()->CenterTitle();
+	dp->h1frame->GetYaxis()->SetTitleSize(0.08);
+	dp->h1frame->GetYaxis()->SetTitleOffset(0.5);
+	dp->h2frame->GetYaxis()->SetLabelSize(0.05);
+	dp->h2frame->GetXaxis()->SetLabelSize(0.05);
+	dp->h2frame->GetXaxis()->CenterTitle();
+	dp->h2frame->GetXaxis()->SetTitleSize(0.05);
 	c->SaveAs("phaseSpaceCorrection.png");
 	area_ideal->Divide(drCounts);
+	area_ideal->SetName("phaseCorr");
 	return area_ideal;
 }	
 
