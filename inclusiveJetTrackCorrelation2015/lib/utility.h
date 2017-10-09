@@ -72,4 +72,46 @@ void padPolisher::centLabel(int k, TPad *pad, float x, float y){
 	str="cent:"+l[k];
 	tx->DrawLatexNDC(x,y,str);
 }
+
+TH1D* xRebin(TH1D* h, int nbin, const float * bin){
+	TString hname = h->GetName();
+	TString htitle = h->GetTitle();
+	TH1D* hnew = new TH1D(hname+"_temp",htitle, nbin, bin);
+	std::vector<int > node; // the position of the new bin node in the old bin scheme
+	int Nbin = h->GetNbinsX();
+	//test if new bin edge is contained in the old binning scheme
+	if(bin[0] != h->GetBinLowEdge(1) || bin[nbin] != h->GetBinLowEdge(Nbin+1)){
+		std::cout<<"Error in Rebin: rebin range changed!"<<std::endl;
+		return NULL;
+	}
+	node.push_back(1);
+	for(int j=1; j<nbin ; ++j){
+		for(int k=node.back()+1 ; k<Nbin; ++k){
+			if( h->GetBinLowEdge(k) == bin[j]){
+				node.push_back(k);
+				break;
+			}
+		}
+	}
+	node.push_back(Nbin+1);
+	for(int j=0; j<node.size()-1; ++j){
+//		cout<<node.at(j)<<endl;
+		float var = 0;
+		float cont =0;
+		float width=0;
+		for(int k=node.at(j); k<node.at(j+1); ++k){
+			cont += h->GetBinContent(k)*h->GetBinWidth(k);
+			var  += pow(h->GetBinError(k)*h->GetBinWidth(k), 2);
+		}
+		width = hnew->GetBinLowEdge(j+2)-hnew->GetBinLowEdge(j+1);
+		cont=cont/width;
+		var=var/pow(width,2);
+		hnew->SetBinContent(j+1, cont);
+		hnew->SetBinError(j+1, pow(var, 0.5));
+	} 
+	hnew ->SetName(hname);
+	*h=*hnew;
+	return hnew;
+}
+
 #endif

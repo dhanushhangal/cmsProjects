@@ -1,12 +1,15 @@
 
 
 #define config_H
+#include "TROOT.h"
+#include "string"
 #include <iostream>
 #include "TMath.h"
 #include "inputTree.h"
 #include "dataTree.h"
 #include "xthf4.h"
 #include "xTree.h"
+#include "TString.h"
 // old cymbal correction
 //#include "../dataSet/corrTableCymbal/xiaoTrkCorr.h"
 // fine bin cymbal correction
@@ -96,8 +99,9 @@ namespace jetTrack{
 		float jetpt[4]={120,150,200,999};
 		int ndeta= 500;
 		int ndphi= 200;
-		float detalow = -5, detaup =5;
-		float dphilow = -TMath::Pi()/2, dphiup = 3*TMath::Pi()/2 ;
+		Double_t detalow = -5, detaup =5;
+		//Double_t dphilow = -TMath::Pi()/2, dphiup = 3*TMath::Pi()/2 ;
+		Double_t dphilow = -TMath::Pi()/2, dphiup = 4.7 ;
 	}
 
 	namespace anaConfig{
@@ -118,17 +122,21 @@ namespace jetTrack{
 	}
 
 
-	bool trackQualityCutsImp (int highPurity, float pfHcal, float pfEcal, float trkPt, float trkPtError, float trkEta, float trkDz, float trkDzError, float trkDxy, float trkDxyError, int trkNHit, float trkChi2, int trkNdof, int trkNlayer){
+	bool trackQualityCutsImp (bool highPurity, float pfHcal, float pfEcal, float trkPt, float trkPtError, float trkEta, float trkDz, float trkDzError, float trkDxy, float trkDxyError, int trkNHit, float trkChi2, int trkNdof, int trkNlayer){
 		if (!highPurity) return 1;
-		if ( trkNHit< 11) return 1;
-		if ( trkPtError/trkPt>=0.1) return 1;
-		if ( trkPtError/trkPt>=0.3) return 1;
-		//		if (TMath::Abs(trkEta)>1.6) return 1; // check mid-rapidity
+		//if ( TMath::Abs(trkEta)>=2.4) return 1;
+		if ( trkNHit< 11 ) return 1;
+		if ( trkPt<= 0.7 || trkPt > 400) return 1;
+		////if ( trkPtError/trkPt>=0.1) return 1;
+		////if ( trkPtError/trkPt>=0.3) return 1;
+		////		if (TMath::Abs(trkEta)>1.6) return 1; // check mid-rapidity
 		if ( TMath::Abs(trkDz/trkDzError) >=3) return 1;
 		if ( TMath::Abs(trkDxy/trkDxyError) >=3) return 1;
+		if (float(trkChi2)/float(trkNdof)/float(trkNlayer)>0.15) return 1;
 		float Et = (pfHcal+pfEcal)/TMath::CosH(trkEta);
 		if (!(trkPt<20 || (Et>0.5*trkPt))) return 1;
-		if (float(trkChi2)/float(trkNdof)/float(trkNlayer)>0.15) return 1;
+		/*
+		*/
 		return 0;
 	}
 
@@ -166,7 +174,7 @@ namespace jetTrack{
 	}
 	bool eventCuts(xTree *t){
 		if(t->isMC && !(t->pthat<80)) return 1;
-		if( t->vz>15 || t->vz<-15) return 1;
+		if( fabs(t->vz)>15.) return 1;
 		if(t->ispp){
 			if(!(t->collisionEventSelection)) return 1;
 			if(!(t->HBHEFilter)) return 1;
@@ -185,8 +193,13 @@ namespace jetTrack{
 		//		if (TMath::Abs(t->eta->at(j))>1.6) return 1; // check mid-rapidity
 		return 0;
 	}
-	bool jetCut(xTree *t,int j){
+	bool jetCutImp(float pt,float trackMax){
+		if( pt< 120) return 1; 
+		if( trackMax/pt<=0.01) return 1;
 		return 0;
+	}
+	bool jetCut(xTree *t,int j){
+		return jetCutImp(t->corrpt->at(j), t->trackMax->at(j));
 	}
 }
 

@@ -68,11 +68,13 @@ void xmath::solarIntegral_dphi(TH2* h2, TH1* h, float phi1 , float phi2){
 			xwidth = h2->GetXaxis()->GetBinWidth(jx);
 			ywidth = h2->GetYaxis()->GetBinWidth(jy);
 			content = h2->GetBinContent(jx,jy)*xwidth*ywidth;
+			if(content){
 			binError = h2->GetBinError(jx,jy)*xwidth*ywidth;
 			error = sqrt(pow(h->GetBinError(h->FindBin(r)),2)+\
 					pow(binError,2));
 			h->Fill(r, content);
 			h->SetBinError(h->FindBin(r), error);
+			}
 		}
 	}
 	for(int i=1; i<h->GetNbinsX()+1;i++){

@@ -8,13 +8,11 @@
 #ifndef inputTree_h
 #define inputTree_h
 
-#include <TROOT.h>
+//#include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include "vector"
-#include "vector"
 #include "vector"
 using namespace std;
 class inputTree {

@@ -136,9 +136,9 @@ void signalFactoryBase::drIntegral(TH2D* signal, TH1D* drDist){
 			ywidth = signal->GetYaxis()->GetBinWidth(jy);
 			// integrand f(x,y)dxdy
 			content = signal->GetBinContent(jx,jy)*xwidth*ywidth;
+			if( content ) {
 			error = sqrt(pow(drDist->GetBinError(drDist->FindBin(dr)),2)+\
 					pow(signal->GetBinError(jx,jy)*xwidth*ywidth,2));
-			if( content ) {
 				drDist->Fill(dr, content);
 				drDist->SetBinError(drDist->FindBin(dr), error);
 			}

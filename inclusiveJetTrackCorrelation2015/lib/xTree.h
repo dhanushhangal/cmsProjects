@@ -44,14 +44,12 @@ void xTree::tree_basic_build(){
 	tree->SetBranchStatus("trkEta",1);
 	tree->SetBranchStatus("trkPhi",1);
 	tree->SetBranchStatus("trkAlgo", 1);
-	tree->SetBranchStatus("highPurity", 1);
 	tree->SetBranchStatus("vz", 1);
 
 	tree->SetBranchAddress("trkPt", &trkPt);
 	tree->SetBranchAddress("trkEta", &trkEta);
 	tree->SetBranchAddress("trkPhi", &trkPhi);
 	tree->SetBranchAddress("trkAlgo", &trkAlgo);
-	tree->SetBranchAddress("highPurity", &highPurity);
 	tree->SetBranchAddress("vz", &vz);
 
 	if(!ispp) {
@@ -98,6 +96,8 @@ void xTree::tree_basic_build(){
 
 	tree->SetBranchAddress("pfEcal",&pfEcal);
 	tree->SetBranchAddress("pfHcal",&pfHcal);
+	tree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
+	tree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&HBHEFilter);
 }
 
 void xTree::tree_MC_build(){
@@ -137,19 +137,17 @@ void xTree::GetEntry(Long64_t jentry){
 
 void xTree::tree_pp_build(){
 	tree->SetBranchStatus("pPAprimaryVertexFilter",1);
-	tree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
 	tree->SetBranchAddress("pPAprimaryVertexFilter",&collisionEventSelection);
-	tree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&HBHEFilter);
 }
 
 void xTree::tree_pb_build(){
-	tree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
+	tree->SetBranchStatus("highPurity", 1);
+	tree->SetBranchAddress("highPurity", &highPurity);
 	tree->SetBranchStatus("pcollisionEventSelection",1);
-	tree->SetBranchStatus("phfCoincFilter3",1);
-	tree->SetBranchStatus("pprimaryVertexFilter",1);
-	tree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&HBHEFilter);
 	tree->SetBranchAddress("pcollisionEventSelection",&collisionEventSelection);
+	tree->SetBranchStatus("phfCoincFilter3",1);
 	tree->SetBranchAddress("phfCoincFilter3",&phfCoincFilter);
+	tree->SetBranchStatus("pprimaryVertexFilter",1);
 	tree->SetBranchAddress("pprimaryVertexFilter",&pprimaryVertexFilter);
 }
 #endif

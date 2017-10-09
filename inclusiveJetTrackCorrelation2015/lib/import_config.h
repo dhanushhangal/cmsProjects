@@ -176,8 +176,8 @@ namespace kurt_reg{
 }
 
 namespace hallie_reg{
-	TFile * py_f = new TFile("/Users/tabris/Research/HIN_5.02TeV/JetTrack2016/results_plotting/Jet_Shapes.root");
-	TFile * js_f = new TFile("/Users/tabris/Research/HIN_5.02TeV/JetTrack2016/results_plotting/Jet_Shapes.root");
+	TFile * py_f = new TFile("/Users/tabris/Research/HIN_5.02TeV/JetTrack2016/jet_shapes_result/Jet_Shapes_FineDr.root");
+	TFile * js_f = new TFile("/Users/tabris/Research/HIN_5.02TeV/JetTrack2016/jet_shapes_result/Jet_Shapes_pTweighted_FineDr.root");
 	TString trk_tag[] = {"TrkPt07", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt20","TrkPt300"};
 	TString cent_tag[]= {"Cent0","Cent10","Cent30","Cent50","Cent100"};
 
@@ -190,6 +190,54 @@ namespace hallie_reg{
 	TH1D* diff[4];
 	TH1D* diff_syst[4];
 	TString tmp;
+
+	TH1D* js_dr[9][5];
+	TH1D* js_dr_err[9][5];
+	TH1D* js_dr_all[5];
+	TH1D* js_dr_err_all[5];
+	void getJS(){
+		for(int i=0;i<9; ++i){
+			tmp = "JetShape2_Yield_BkgSub_pTweightedInclusive_pp_"+
+				trk_tag[i]+"_"+trk_tag[i+1];
+			js_dr[i][4]=(TH1D*)js_f->Get(tmp);
+			tmp = "Jet_Shape_SystErr_pp_"+
+				trk_tag[i]+"_"+trk_tag[i+1];
+			js_dr_err[i][4]=(TH1D*)js_f->Get(tmp);
+			for(int j=0;j<4; ++j){
+				tmp = "JetShape2_Yield_BkgSub_pTweightedInclusive_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+
+					trk_tag[i]+"_"+trk_tag[i+1];
+				js_dr[i][j]=(TH1D*)js_f->Get(tmp);
+				tmp = "Jet_Shape_SystErr_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+
+					trk_tag[i]+"_"+trk_tag[i+1];
+				js_dr_err[i][j]=(TH1D*)js_f->Get(tmp);
+			}
+		}
+		for(int i=0;i<4; ++i){
+			tmp = "JetShape2_Yield_BkgSub_pTweightedInclusive_"+cent_tag[i]+"_"+cent_tag[i+1]+"_"+
+				trk_tag[9]+"_";
+			js_dr_all[i]=(TH1D*)js_f->Get(tmp);
+			tmp = "Jet_Shape_SystErr_"+cent_tag[i]+"_"+cent_tag[i+1]+"_"+
+				trk_tag[9]+"_";
+			js_dr_err_all[i]=(TH1D*)js_f->Get(tmp);
+		//	tmp = "Integral_PbPb"+cent_tag[i]+"_"+cent_tag[i+1];
+		//	integral[i]=(TH1D*)py_f->Get(tmp);
+		//	tmp = "Integral_PbPb_Syst"+cent_tag[i]+"_"+cent_tag[i+1];
+		//	integral_syst[i]=(TH1D*)py_f->Get(tmp);
+		//	tmp = "Integral_Diff_"+cent_tag[i]+"_"+cent_tag[i+1];
+		//	diff[i]=(TH1D*)py_f->Get(tmp);
+		//	tmp = "Integral_Diff_Syst"+cent_tag[i]+"_"+cent_tag[i+1];
+		//	diff_syst[i]=(TH1D*)py_f->Get(tmp);
+		}
+		//integral[4]=(TH1D*)py_f->Get("Integral_pp");
+		//integral_syst[4]=(TH1D*)py_f->Get("Integral_pp_Syst");
+		tmp = "JetShape2_Yield_BkgSub_pTweightedInclusive_pp_"+
+			trk_tag[9]+"_";
+		js_dr_all[4]=(TH1D*)js_f->Get(tmp);
+		tmp = "Jet_Shape_SystErr_pp_"+
+			trk_tag[9]+"_";
+		js_dr_err_all[4]=(TH1D*)js_f->Get(tmp);
+	}
+
 	void getPY(){
 		for(int i=0;i<9; ++i){
 			tmp = "JetShape2_Yield_BkgSub_Inclusive_pp_"+

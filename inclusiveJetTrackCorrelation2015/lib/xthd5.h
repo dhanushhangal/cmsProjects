@@ -16,8 +16,13 @@ class xthd5 {
 		xthd5(){
 			nhist =0;
 		}
-		xthd5(TString name, TString title, int nxbin, float xmin,float xmax, \
-				int nybin, float ymin, float ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
+//		xthd5(TString name, TString title, int nxbin, float xmin,float xmax, \
+//				int nybin, float ymin, float ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
+//				float * rbin1, TString ztitle="z-axis",TString wtitle="w-axis",TString rtitle="r-axis");
+//		xthd5(TString name, TString title, int nxbin, double xmin,double xmax, \
+//				int nybin, double ymin, double ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
+		xthd5(TString name, TString title, int nxbin, Double_t xmin,Double_t xmax, \
+				int nybin, Double_t ymin, Double_t ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
 				float * rbin1, TString ztitle="z-axis",TString wtitle="w-axis",TString rtitle="r-axis");
 		void axis_title_setup(TString name,TString *&aname, int nbin, float *bins, float *& bins2);
 		int Fill(float x,float y,float z,float w,float r,float wit=1);
@@ -42,8 +47,10 @@ class xthd5 {
 };
 
 
-xthd5::xthd5(TString name, TString title, int nxbin, float xmin,float xmax, \
-		int nybin, float ymin, float ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
+//xthd5::xthd5(TString name, TString title, int nxbin, double xmin,double xmax, \
+//		int nybin, double ymin, double ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
+xthd5::xthd5(TString name, TString title, int nxbin, Double_t xmin,Double_t xmax, \
+		int nybin, Double_t ymin, Double_t ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
 		float * rbin1, TString ztitle,TString wtitle,TString rtitle)
 {
 	hname = name;
@@ -62,9 +69,9 @@ xthd5::xthd5(TString name, TString title, int nxbin, float xmin,float xmax, \
 	axis_title_setup(ztitle, zname, nzbin, zbin1, zbins);
 	axis_title_setup(wtitle, wname, nwbin, wbin1, wbins);
 	axis_title_setup(rtitle, rname, nrbin, rbin1, rbins);
-//	cout<<zbins<<endl;
+	//	cout<<zbins<<endl;
 
-//	cout<<zbins[0]<<endl;
+	//	cout<<zbins[0]<<endl;
 	TString tmp;
 	hd5 = new TH2D*[nhist];
 	for(int i=0; i<nz; ++i){
@@ -78,6 +85,13 @@ xthd5::xthd5(TString name, TString title, int nxbin, float xmin,float xmax, \
 		}
 	}
 }
+//xthd5::xthd5(TString name, TString title, int nxbin, float xmin,float xmax, \
+//		int nybin, float ymin, float ymax, int nzbin, float *zbin1, int nwbin, float *wbin1, int nrbin,
+//		float * rbin1, TString ztitle,TString wtitle,TString rtitle){
+//	xthd5(name, title, nxbin,  double(xmin), double (xmax), \
+//			nybin, double(ymin), double(ymax),nzbin, zbin1, nwbin, wbin1, nrbin,
+//			rbin1, ztitle, wtitle,rtitle);
+//}
 
 void xthd5::axis_title_setup(TString name, TString *&aname, int nbin, float *bins, float *&bins2){
 	if(bins2!=NULL) delete [] bins2;
@@ -88,9 +102,9 @@ void xthd5::axis_title_setup(TString name, TString *&aname, int nbin, float *bin
 		bins2[i]=bins[i];
 		stream.str("");
 		if(i<nbin)
-			stream<<fixed<<setprecision(np)<<bins[i]<<"<="<<name<<"<"<<fixed<<setprecision(np)<<bins[i+1];
+			stream<<fixed<<setprecision(np)<<bins[i]<<"<="<<name<<"<"<<fixed<<setprecision(np)<<bins[i+1]<<" ";
 		else 
-			stream<<*name<<">"<<fixed<<setprecision(np)<<bins[i];
+			stream<<name<<">"<<fixed<<setprecision(np)<<bins[i]<<" ";
 		aname[i]=stream.str();
 	}
 }
@@ -215,7 +229,7 @@ void xthd5::RebinR(int n, float *bins){
 }
 
 int xthd5::Read(TString name, TString title, TFile *f , int nz1, float *zbin1, int nw1, float *wbin1, int nr1, float *rbin1, TString ztitle,TString wtitle,TString rtitle){
-	
+
 	if(!nhist) {
 		std::cout<<"thd5 is filled by other histograms, load failed!"<<std::endl;
 		return 0;

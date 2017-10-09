@@ -51,9 +51,11 @@ void signalFactory::getSignal(TString name, TString hname){
 	if(hname ) hname = fname;
 	//int nbin = 21;
 	//const float xdrbins[22] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.675, 0.7, 0.725, 0.75, 0.8,  0.85,  0.9, 1};
-	int nbin = 14;
-	//const float xdrbins[15] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.55,  0.65, 0.75, 0.85,  1};
-	const float xdrbins[15] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5,  0.6, 0.7, 0.8,  1};
+	int nbin = 26;
+	const float xdrbins[27] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5,0.525, 0.55, 0.575,0.6,0.625, 0.65, 0.675, 0.7, 0.725, 0.75,0.775, 0.8, 0.825,  0.85,  0.9, 1};
+	//int nbin = 19;
+	//const float xdrbins[20] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45,0.5, 0.55, 0.6, 0.65,0.7, 0.75, 0.8,0.85,0.9, 1};
+	//const float xdrbins[20] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7,0.75, 0.8,0.85,0.9, 1};
 	float phiSmin = 1.5, phiSmax=2.5;// sideBand region in dphi 
 	signal_deta = new TH1D*[4*(signal->nz-1)];
 	signal_dphi = new TH1D*[4*(signal->nz-1)];
@@ -106,6 +108,8 @@ void signalFactory::getSignal(TString name, TString hname){
 		}
 	}
 	//	wf->Close();
+	TFile *wff= TFile::Open("phaseCorr.root", "recreate");
+	geoCorr->Write();
 }
 
 void signalFactory::drawDebug(){
@@ -136,7 +140,7 @@ void signalFactory::drawDebug(){
 
 	mp_deta->draw();
 	mp_dphi->draw();
-	mp_dr  ->draw();
+        mp_dr  ->draw();
 	mp_sb  ->draw();
 
 	mp_deta->SaveAs(dumpPath+fname+"_sigDebug_deta."+dumpType);

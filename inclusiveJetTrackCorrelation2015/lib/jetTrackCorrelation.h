@@ -23,6 +23,7 @@
 #endif
 
 #include "xthd5.h"
+#include "TBenchmark.h"
 
 using namespace jetTrack;
 
@@ -38,6 +39,7 @@ class jetTrackCorrelation{
 		void getTrk(int j);
 		void getEventWeight(Long64_t j);
 		void fillCorrelation();
+		void addMixing(xTree* t);
 		void Write();
 	public : 
 		xthd5* gen;
@@ -52,6 +54,7 @@ class jetTrackCorrelation{
 		TFile *signal_f;
 		TTree* tree;
 		xTree* t;
+		TChain* me_tree;
 
 		float jet_pt, jet_eta, jet_phi;
 
@@ -83,6 +86,7 @@ jetTrackCorrelation::jetTrackCorrelation(TString name,TString tname,  bool is_MC
 	signal_f=TFile::Open(name);
 	tree = (TTree*) signal_f->Get(tname);
 	t = new xTree(tname, signal_f, is_MC, is_pp);
+	me_tree = new TChain(tname);
 }
 
 void jetTrackCorrelation::bookHisto(bool isMC, bool ispp){
@@ -114,11 +118,14 @@ void jetTrackCorrelation::runAnalyzer(){
 }
 
 void jetTrackCorrelation::PbPbAnalyzer(){
+	loadConfig();
 	bookHisto(isMC,ispp);
 
 	TBenchmark ben;
 	ben.Start("job");
-	Long64_t nentries = t->tree->GetEntriesFast();
+//	Long64_t nentries = t->tree->GetEntriesFast();
+	Long64_t nentries = 101;
+	int counter =0;
 	for(Long64_t jentry=0; jentry<nentries; ++jentry){
 		if( jentry % 100==0) {
 			std::cout<<"finished "<<jentry<<" events..."<<std::endl;
@@ -127,32 +134,41 @@ void jetTrackCorrelation::PbPbAnalyzer(){
 		}
 		t->GetEntry(jentry);
 
-		if(eventCuts(t)) continue;
+		if(eventCuts(t)){ 
+			continue;
+		}
 		getEventWeight(jentry);
+
 
 		for(int j_jet=0; j_jet<t->corrpt->size(); ++j_jet){
 			if(jetCut(t,j_jet)) continue;
 			getJetAxis(j_jet);
 			//filling the jet information:
 			jetInform(j_jet);
+		counter=0;
 			for(int j_trk=0; j_trk<t->trkPt->size(); ++j_trk){
 				if(trackQualityCuts(t,j_trk)) continue;
+		counter++;
 				getTrk(j_trk);
-				trk_correction=correction::trk_corr(t,j_trk);
+				//trk_correction=correction::trk_corr(t,j_trk);
 				fillCorrelation();
 			/*
 				*/
 			}
+		cout<<"counter="<<counter<<endl;
 		}
 	}
 }
 
 void jetTrackCorrelation::getEventWeight(Long64_t j){
-	wvz    =1; 
-	wcent  =1; 
-	wpthat =1; 
-	if(!ispp) wvz=jetTrack::weight::vz_weight(t->vz);
-	if(!isMC) wcent=jetTrack::weight::cent_weight(t->hiBin);
+	if(isMC) {
+		if(ispp) {
+		}
+		else {
+			wvz=jetTrack::weight::vz_weight(t->vz);
+			wcent=jetTrack::weight::cent_weight(t->hiBin);
+		}
+	}
 }
 
 void jetTrackCorrelation::getJetAxis(int j){
@@ -161,7 +177,7 @@ void jetTrackCorrelation::getJetAxis(int j){
 	else {
 		jet_pt=t->corrpt->at(j);
 		jet_eta=t->jteta->at(j);
-		jet_eta=t->jtphi->at(j);
+		jet_phi=t->jtphi->at(j);
 	}
 }
 
@@ -183,9 +199,13 @@ void jetTrackCorrelation::fillCorrelation(){
 	if(dphi>(1.5*TMath::Pi())){dphi+= -2*TMath::Pi();}
 	if(dphi<(-0.5*TMath::Pi())){dphi+= 2*TMath::Pi();}
 	recSignal_pTweighted->Fill(deta, dphi,trk_pt,t->hiBin,jet_pt, wvz*wcent*wpthat*trk_correction*trk_pt);
-	recSignal->Fill(deta, dphi,trk_pt,t->hiBin,jet_pt, wvz*wcent*wpthat*trk_correction);
+	//recSignal->Fill(deta, dphi,trk_pt,t->hiBin,jet_pt, wvz*wcent*wpthat*trk_correction);
+	recSignal->Fill(deta, dphi,trk_pt,t->hiBin,jet_pt, 1);
 }
 
+void jetTracCorrelation::addMixing(xTree* t){
+	me_tree->Add();
+}
 void jetTrackCorrelation::Write(){
 	if(ispp){
 	}
