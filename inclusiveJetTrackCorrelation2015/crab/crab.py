@@ -3,10 +3,11 @@ config = Configuration()
 
 #subScript = "HT_Analyzer_All_JFFCorr2_PbPb_Reduced.C"
 #subScript = "tracker.C"
-subScript = "closMaker.C"
+#subScript = "closMaker.C"
+subScript = "testOnData.C"
 
 config.section_("General")
-config.General.requestName = 'cymbal_trkClosure_fineBin'
+config.General.requestName = 'cymbal_onData_forSymmetrization'
 config.General.workArea = config.General.requestName 
 config.General.transferLogs = False
 
@@ -22,7 +23,8 @@ config.JobType.outputFiles = ['trkClos.root']
 config.JobType.maxJobRuntimeMin = 1800
 
 config.section_("Data")
-config.Data.userInputFiles = open('list_cymbal.txt').readlines()
+#config.Data.userInputFiles = open('list_cymbal.txt').readlines()
+config.Data.userInputFiles = open('list_PbPb_Data.txt').readlines()
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 1
 config.Data.totalUnits = len(config.Data.userInputFiles)

@@ -16,7 +16,7 @@
 #include "../Austin_TrkCorr/getTrkCorr.h"
 using namespace jetTrack;
 
-TrkCorr * Austin_corr = new TrkCorr("../Austin_TrkCorr/");
+//TrkCorr * Austin_corr = new TrkCorr("../Austin_TrkCorr/");
 
 class trackingCorr  {
 	public: 
