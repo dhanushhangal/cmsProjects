@@ -48,16 +48,20 @@ class multiPad: public baseCanvas{
 	{
 		tl = new TLine();
 		doFrame=false;
+		drawLine=false;
 	}
 		void addHist(TH1* h, int row, int col);
 		void draw();
 		void useFrame();
+		void baseLine(float, float, float, float);
 
 	public :
 		std::multimap<int ,TH1*> buff;
 		TLine *tl;
 		TH1* hframe;
 		bool doFrame;
+		bool drawLine;
+		float lx1, lx2, ly1, ly2;
 };
 
 void multiPad::addHist(TH1* h, int row, int col){
@@ -67,6 +71,7 @@ void multiPad::addHist(TH1* h, int row, int col){
 
 void multiPad::draw(){
 //	this->Draw();
+	if(drawLine)tl->SetLineStyle(2);
 	std::pair<multimap<int,TH1*>::iterator, multimap<int, TH1*>::iterator> ii;
 	multimap<int, TH1*>::iterator it;
 	for(int n=1; n<nrow*ncol+1; ++n){
@@ -77,12 +82,17 @@ void multiPad::draw(){
 			if(it == ii.first) (it->second)->Draw();
 			else (it->second)->Draw("same");
 		}
+		if(drawLine) tl->DrawLine(lx1, ly1, lx2, ly2);
 	}
 	this->cd(1);
 	this->Update();
 }
 
 void multiPad::useFrame(){
+}
+void multiPad::baseLine(float x1, float y1, float x2, float y2){
+	lx1=x1;	lx2=x2;	ly1=y1; ly2=y2;
+	drawLine=true;
 }
 
 #endif

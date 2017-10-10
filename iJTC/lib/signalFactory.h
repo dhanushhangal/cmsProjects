@@ -22,8 +22,9 @@ class signalFactory : public signalFactoryBase {
 		}
 		void readSignal(TString name, TString title, TFile *f , int nz1, float *zbin1, int nw1, float *wbin1);
 		void readMixing(TString name, TString title, TFile *f , int nz1, float *zbin1, int nw1, float *wbin1);
-		void getSignal(TString name, TString hname = "");
+		void getSignal(TString hname = "");
 		void drawDebug();
+		void save();
 		void histoConfig(TH1*, float x1, float x2);
 	public :
 		xthd4 * signal;
@@ -47,7 +48,7 @@ void signalFactory::readMixing(TString name, TString title, TFile *f , int nz1, 
 	mixing->Read(name, title, f , nz1, zbin1,  nw1, wbin1);
 }
 
-void signalFactory::getSignal(TString name, TString hname){
+void signalFactory::getSignal( TString hname){
 	if(hname ) hname = fname;
 	//int nbin = 21;
 	//const float xdrbins[22] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.675, 0.7, 0.725, 0.75, 0.8,  0.85,  0.9, 1};
@@ -96,20 +97,8 @@ void signalFactory::getSignal(TString name, TString hname){
 			signal_sideBand[i*4+j]->Scale(ybinwidth);
 		}
 	}
-	TFile *wf = TFile::Open(name, "recreate");
-	for(int i=0; i<signal->nz-1; ++i){
-		for(int j=0; j<4; ++j){
-			signal_dr      [i*4+j]->Write();
-			signal_drGeo   [i*4+j]->Write();
-			signal_deta    [i*4+j]->Write();
-			signal_dphi    [i*4+j]->Write();
-			signal_sideBand[i*4+j]->Write();
-			sig            [i*4+j]->Write();
-		}
-	}
-	//	wf->Close();
-	TFile *wff= TFile::Open("phaseCorr.root", "recreate");
-	geoCorr->Write();
+	//TFile *wff= TFile::Open("phaseCorr.root", "recreate");
+	//geoCorr->Write();
 }
 
 void signalFactory::drawDebug(){
@@ -138,6 +127,13 @@ void signalFactory::drawDebug(){
 		}
 	}
 
+	mp_deta->baseLine(xmin_deta, 0, xmax_deta, 0);
+	mp_dphi->baseLine(xmin_dphi, 0, xmax_dphi, 0);
+	mp_sb  ->baseLine(xmin_deta, 0, xmax_deta, 0);
+
+	mp_dphi->draw();
+        mp_dr  ->draw();
+	mp_sb  ->draw();
 	mp_deta->draw();
 	mp_dphi->draw();
         mp_dr  ->draw();
@@ -156,6 +152,18 @@ void signalFactory::histoConfig(TH1* h, float x1, float x2){
 	h->GetYaxis()->CenterTitle();
 	h->SetAxisRange(x1,x2, "X");
 	h->GetXaxis()->SetLabelSize(0.05);
+}
+void signalFactory::save(){
+	for(int i=0; i<signal->nz-1; ++i){
+		for(int j=0; j<4; ++j){
+			signal_dr      [i*4+j]->Write();
+			signal_drGeo   [i*4+j]->Write();
+			signal_deta    [i*4+j]->Write();
+			signal_dphi    [i*4+j]->Write();
+			signal_sideBand[i*4+j]->Write();
+			sig            [i*4+j]->Write();
+		}
+	}
 }
 
 #endif
