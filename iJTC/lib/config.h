@@ -30,7 +30,7 @@ namespace jetTrack{
 			return fvz->Eval(vz);
 		}
 	}
-
+/*
 	namespace correction{
 		// fine bin correction
 		xiaoTrkCorr* trkc= new xiaoTrkCorr("../tracking/cymbalCorr_FineBin.root");
@@ -46,6 +46,7 @@ namespace jetTrack{
 			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
 		}
 	}
+	*/
 
 	namespace trackingCorrConfig{
 		//the bin config for initial scan 
