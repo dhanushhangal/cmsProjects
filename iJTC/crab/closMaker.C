@@ -1,15 +1,14 @@
 
-#include "lib/config_v1.h"
-#include "TCanvas.h"
 #include <fstream>
 #include <vector>
-#include "assert.h"
+#include "lib/config_v2.h"
+#include "lib/trackingClosure.h"
 #include "lib/trackingCorr.h"
-//#include "../lib/trackingClosure.h"
 using namespace jetTrack;
-// using to pull the tracking correction tables
+
 void ReadFileList(std::vector<std::string> &my_file_names, TString file_of_names, bool debug);
-void tracker(int jobID=0, bool localTest =1){
+void closMaker(int jobID=0, bool localTest =1){
+	loadConfig();
 	std::vector<std::string> file_names;   file_names.clear();
 	TString filename;
 	if(!localTest){
@@ -17,13 +16,33 @@ void tracker(int jobID=0, bool localTest =1){
 		filename  = file_names.at(0);
 	}
 	else 	filename = "/uscms_data/d3/xiaowang/sampleSet/MC_cymbal_tune_1.root";
-	loadConfig();
-	TFile *f =TFile::Open(filename);
-	TTree *t = (TTree*) f->Get("mixing_tree");
+	/* testing the closure scan
+	*/
+	TFile * f = TFile::Open(filename);
+	TTree* tree = (TTree*) f->Get("mixing_tree");
+	TFile *wf = TFile::Open("trkClos.root","recreate");
+	auto t = new inputTree(tree);
+	auto  a  =new trackingClosure(t);
+	a->runScan();
+	/* testing the closure scan*/
+	/*
+	TFile *f = TFile::Open(filename);
+	auto  a  =new trackingClosure(f);
+	a->Read();
+	a->DrawClosure();
+	TFile * f = TFile::Open("MC_cymbal_tune_1.root");
 	TFile *wf = TFile::Open("corr.root","recreate");
-	auto intree = new inputTree(t);
-	auto tcorr = new trackingCorr(intree);
-	tcorr->runScan();
+	TTree* tree = (TTree*) f->Get("mixing_tree");
+	auto t = new inputTree(tree);
+	auto  a  =new trackingCorr(t);
+	a->runScan();
+	//get closure 
+	TFile *f = TFile::Open("corr.root");
+	auto  a  =new trackingCorr(f);
+	a->Read();
+	a->getCorr("getcorr.root");
+	a->showCorr();
+	*/
 }
 
 void ReadFileList(std::vector<std::string> &my_file_names, TString file_of_names, bool debug)
@@ -50,4 +69,3 @@ void ReadFileList(std::vector<std::string> &my_file_names, TString file_of_names
 		assert(0);
 	}
 }
-

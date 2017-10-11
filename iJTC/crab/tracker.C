@@ -1,5 +1,5 @@
 
-#include "lib/config_v1.h"
+#include "lib/config.h"
 #include "TCanvas.h"
 #include <fstream>
 #include <vector>
