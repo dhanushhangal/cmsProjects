@@ -12,7 +12,7 @@ tar xf input_files.tar.gz
 #untar the DR corrections
 #tar xvzf TrkCorr_Jun7_Iterative_PbPb_etaLT2p4.tar.gz
 tar xvzf lib.tar.gz
-#tar xvzf trkCorrTable.tar.gz
+tar xvzf corrTable.tar.gz
 #tar xvzf corrTableCymbal.tar.gz
 
 ss="${2#*=}"

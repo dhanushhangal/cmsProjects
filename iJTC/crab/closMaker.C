@@ -1,9 +1,9 @@
 
 #include <fstream>
 #include <vector>
-#include "lib/config_v2.h"
+#include "lib/config.h"
 #include "lib/trackingClosure.h"
-#include "lib/trackingCorr.h"
+//#include "lib/trackingCorr.h"
 using namespace jetTrack;
 
 void ReadFileList(std::vector<std::string> &my_file_names, TString file_of_names, bool debug);

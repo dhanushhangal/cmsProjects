@@ -30,10 +30,9 @@ namespace jetTrack{
 			return fvz->Eval(vz);
 		}
 	}
-/*
 	namespace correction{
-		// fine bin correction
-		//xiaoTrkCorr* trkc= new xiaoTrkCorr("../tracking/cymbalCorr_FineBin.root");
+		// no dca cut correction
+		xiaoTrkCorr* trkc= new xiaoTrkCorr("../corrTable/patched_corrTable_cymbal_noDCAcuts.root");
 		// broder bin correction
 		//xiaoTrkCorr* trkc= new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
 		float trk_corr(inputTree *t, int j ){
@@ -46,6 +45,7 @@ namespace jetTrack{
 			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
 		}
 	}
+/*
 	*/
 
 	namespace trackingCorrConfig{
