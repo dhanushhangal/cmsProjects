@@ -1,75 +1,105 @@
 
-#include "../../lib/inputTree.h"
-namespace {
-	template<int N> struct PowN {
-		template<typename T> static T op(T t) { return PowN<N/2>::op(t)*PowN<(N+1)/2>::op(t);}
-	};
-	template<> struct PowN<0> {
-		template<typename T>
-			static T op(T t) { return T(1);}
-	};
-	template<>
-		struct PowN<1> {
-			template<typename T>
-				static T op(T t) { return t;}
-		};
-	template<>
-		struct PowN<2> {
-			template<typename T>
-				static T op(T t) { return t*t;}
-		};
+#include "../../lib/xTree.h"
 
-	template<typename T>
-		T powN(T t, int n) {
-			switch(n) {
-				case 4: return PowN<4>::op(t); // the only one that matters
-				case 3: return PowN<3>::op(t); // and this
-				case 8: return PowN<8>::op(t); // used in conversion????
-				case 2: return PowN<2>::op(t);
-				case 5: return PowN<5>::op(t);
-				case 6: return PowN<6>::op(t);
-				case 7: return PowN<7>::op(t);
-				case 0: return PowN<0>::op(t);
-				case 1: return PowN<1>::op(t);
-				default : return std::pow(t,T(n)); 
-			}
+class trackHist : public std::map<string, TH1F*>{
+	public:
+		TH1F* ptRes, *dzRes, *dxyRes, *dz, *dxy, *nhit;
+	public:
+		trackHist(TString name){
+			ptRes = new TH1F(name+"ptRes", "", 100, 0, 0.07);
+			ptRes->GetXaxis()->SetTitle("PtError/Pt");
+			dzRes = new TH1F(name+"dzRes", "", 100, -5, 5);
+			dzRes->GetXaxis()->SetTitle("Dz/DzError");
+			dxyRes = new TH1F(name+"dxyRes", "", 100, -5, 5);
+			dxyRes->GetXaxis()->SetTitle("Dxy/DxyError");
+			dz = new TH1F(name+"dz",  "", 100, -0.1, 0.1);
+			dz->GetXaxis()->SetTitle("Dz");
+			dxy= new TH1F(name+"dxy", "", 100, -0.1, 0.1);
+			dxy->GetXaxis()->SetTitle("Dxy");
+			nhit= new TH1F(name+"nhit", "", 100, 0, 100);
+			nhit->GetXaxis()->SetTitle("nhit");
+			this->insert(std::pair<string, TH1F*> ("ptRes", ptRes));
+			this->insert(std::pair<string, TH1F*> ("dzRes", dzRes));
+			this->insert(std::pair<string, TH1F*> ("dxyRes", dxyRes));
+			this->insert(std::pair<string, TH1F*> ("dz", dz));
+			this->insert(std::pair<string, TH1F*> ("dxy",dxy));
+			this->insert(std::pair<string, TH1F*> ("nhit",nhit));
+		};
+		void fill(xTree &, int);
+};
+
+void trackHist::fill(xTree &t, int j){
+	ptRes ->Fill(t.trkPtError->at(j)/t.trkPt->at(j));
+	dzRes ->Fill(t.trkDz->at(j)/t.trkDzError->at(j));
+	dxyRes->Fill(t.trkDxy->at(j)/t.trkDxyError->at(j));
+	dz->Fill(t.trkDz->at(j));
+	dxy->Fill(t.trkDxy->at(j));
+	nhit->Fill(t.trkNHit->at(j));
+}
+
+bool highPurityCut(xTree &t, int j){
+//	if(t.trkNHit->at(j)<13) return false;
+	if(fabs( t.trkPtError->at(j)/t.trkPt->at(j))>0.05) return false;
+	//if(fabs( t.trkDz->at(j)/t.trkDzError->at(j))>3) return false;
+	//if(fabs( t.trkDxy->at(j)/t.trkDxyError->at(j))>3) return false;
+	if((t.trkChi2->at(j)/t.trkNdof->at(j)/t.trkNlayer->at(j))>0.15) return false;
+	return true;
+}
+
+void highPurity_check(){
+	TFile *f = TFile::Open("../../dataSet/MC_cymbal_tune_1.root");
+	auto t = new xTree("mixing_tree",f, 1, 0); 
+	trackHist raw("raw");
+	trackHist highPurity("highPurity");
+	trackHist cutsOn("cuts");
+
+	Long64_t nev = t->tree->GetEntriesFast();
+	for(Long64_t jev = 0; jev<nev; ++jev){
+		t->GetEntry(jev);
+		if(jev %1000==0) cout<<"processing "<<jev<<".."<<endl;
+		for(int j=0; j<t->trkPt->size(); ++j){
+			raw.fill(*t, j);	
+			if(t->highPurity->at(j)==1) highPurity.fill(*t, j);
+			if(highPurityCut(*t, j)) cutsOn.fill(*t,j);
 		}
-}
-
-void test(){
-	using namespace std;
-	//cout<<powN(1.5,3)<<endl;
-	TChain *t = new TChain("mixing_tree");
-	t->Add("/uscms_data/d3/xiaowang/sampleSet/MC_cymbal_tune_1.root");
-	t->Add("/uscms_data/d3/xiaowang/sampleSet/MC_cymbal_tune_2.root");
-	TH1F* dptRes1 = new TH1F("dptRes1", "", 100, 0, 0.05);
-	TH1F* dptRes2 = new TH1F("dptRes2", "", 100, 0, 0.05);
-	dptRes2->SetLineColor(kRed);
-	dptRes1->GetXaxis()->SetTitle("PtError/Pt");
-
-	TH1F* dz1 = new TH1F("dz1", "", 100, -0.2, 0.2);
-	TH1F* dz2 = new TH1F("dz2", "", 100, -0.2, 0.2);
-	dz2->SetLineColor(kRed);
-	dz1->GetXaxis()->SetTitle("trkDz");
-
-	TCanvas *c = new TCanvas("c","", 1200, 400);
-	c->Divide(4,1);
+	}
+	TCanvas* c = new TCanvas("c", "", 1600, 1200);
+	c->Divide(3,2);
 	c->cd(1);
-	t->Draw("trkPtError/trkPt>>dptRes1" );
-	t->Draw("trkPtError/trkPt>>dptRes2","highPurity ==1", "same");
-
+	highPurity["ptRes"]->SetLineColor(kRed);
+	cutsOn    ["ptRes"]->SetLineColor(kGreen+2);
+	raw       ["ptRes"]->Draw();
+	highPurity["ptRes"]->Draw("same");
+	cutsOn    ["ptRes"]->Draw("same");
 	c->cd(2);
-	t->Draw("(trkDz/trkDzError)>>dz1" );
-	t->Draw("(trkDz/trkDzError)>>dz2","highPurity ==1", "same");
-
-	TH1F* dxy1 = new TH1F("dxy1", "", 100, -0.2, 0.2);
-	TH1F* dxy2 = new TH1F("dxy2", "", 100, -0.2, 0.2);
-	dxy2->SetLineColor(kRed);
-	dxy1->GetXaxis()->SetTitle("trkDxy");
+	highPurity["dzRes"]->SetLineColor(kRed);
+	cutsOn    ["dzRes"]->SetLineColor(kGreen+2);
+	raw       ["dzRes"]->Draw();
+	highPurity["dzRes"]->Draw("same");
+	cutsOn    ["dzRes"]->Draw("same");
 	c->cd(3);
-	t->Draw("trkDxy>>dxy1" );
-	t->Draw("trkDxy>>dxy2","highPurity ==1", "same");
-	//t->Draw("trkDz>>dz2","highPurity ==1", "same");
-	/*
-	*/
+	highPurity["dxyRes"]->SetLineColor(kRed);
+	cutsOn    ["dxyRes"]->SetLineColor(kGreen+2);
+	raw       ["dxyRes"]->Draw();
+	highPurity["dxyRes"]->Draw("same");
+	cutsOn    ["dxyRes"]->Draw("same");
+	c->cd(4);
+	highPurity["dz"]->SetLineColor(kRed);
+	cutsOn    ["dz"]->SetLineColor(kGreen+2);
+	raw       ["dz"]->Draw();
+	highPurity["dz"]->Draw("same");
+	cutsOn    ["dz"]->Draw("same");
+	c->cd(5);
+	highPurity["dxy"]->SetLineColor(kRed);
+	cutsOn    ["dxy"]->SetLineColor(kGreen+2);
+	raw       ["dxy"]->Draw();
+	highPurity["dxy"]->Draw("same");
+	cutsOn    ["dxy"]->Draw("same");
+	c->cd(6);
+	highPurity["nhit"]->SetLineColor(kRed);
+	cutsOn    ["nhit"]->SetLineColor(kGreen+2);
+	raw       ["nhit"]->Draw();
+	highPurity["nhit"]->Draw("same");
+	cutsOn    ["nhit"]->Draw("same");
 }
+
