@@ -245,7 +245,11 @@ void hist_class::AddHists(hist_class *more_hists, float wt)
       all_jets_phi[ibin][ibin2]->Add(more_hists->all_jets_phi[ibin][ibin2], wt);
       all_jets_eta[ibin][ibin2]->Add(more_hists->all_jets_eta[ibin][ibin2], wt);
 
+      all_bjets_corrpT[ibin][ibin2]->Add(more_hists->all_jets_corrpT[ibin][ibin2], wt);
+      all_bjets_phi[ibin][ibin2]->Add(more_hists->all_jets_phi[ibin][ibin2], wt);
+      all_bjets_eta[ibin][ibin2]->Add(more_hists->all_jets_eta[ibin][ibin2], wt);
       //// leading jet histograms
+      /*
       only_leadingjets_corrpT[ibin][ibin2]->Add(more_hists->only_leadingjets_corrpT[ibin][ibin2], wt);
       only_leadingjets_phi[ibin][ibin2]->Add(more_hists->only_leadingjets_phi[ibin][ibin2], wt);
       only_leadingjets_eta[ibin][ibin2]->Add(more_hists->only_leadingjets_eta[ibin][ibin2], wt);
@@ -261,7 +265,7 @@ void hist_class::AddHists(hist_class *more_hists, float wt)
       only_nonleadingjets_phi[ibin][ibin2]->Add(more_hists->only_nonleadingjets_phi[ibin][ibin2], wt);
       only_nonleadingjets_eta[ibin][ibin2]->Add(more_hists->only_nonleadingjets_eta[ibin][ibin2], wt);
 
-
+*/
 
 
       for (int ibin3=0;ibin3<nTrkPtBins;ibin3++){
@@ -399,10 +403,14 @@ void hist_class::Write(int mc_type_i)
     Aj[ibin]->Write();
 
     for (int ibin2=0;ibin2<nPtBins;ibin2++){
-
+/*
       all_jets_corrpT[ibin][ibin2]->Write();
       all_jets_phi[ibin][ibin2]->Write();
       all_jets_eta[ibin][ibin2]->Write();
+*/
+      all_bjets_corrpT[ibin][ibin2]->Write();
+      all_bjets_phi[ibin][ibin2]->Write();
+      all_bjets_eta[ibin][ibin2]->Write();
 
       for (int ibin3=0;ibin3<nTrkPtBins;ibin3++){
 
