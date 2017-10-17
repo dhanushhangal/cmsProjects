@@ -103,15 +103,17 @@ void stackHist::addDiff(TH1** h ,int num, float *weight){
 			}
 		}
 		stemp = st_name+Form("_up_%d",i);
-		hist_trunk_up.push_back((TH1*)tem_up->Clone(stemp));
+//		hist_trunk_up.push_back((TH1*)tem_up->Clone(stemp));
+		hist_trunk_up.push_back((TH1*)tem_up);
 		stemp = st_name+Form("_down_%d",i);
-		hist_trunk_down.push_back((TH1*)tem_down->Clone(stemp));
+//		hist_trunk_down.push_back((TH1*)tem_down->Clone(stemp));
+		hist_trunk_down.push_back((TH1*)tem_down);
 		if(weight != NULL) {
 			hist_trunk_up.back()->Scale(weight[i]);
 			hist_trunk_down.back()->Scale(weight[i]);
 		}
-		tem_up->Delete();
-		tem_down->Delete();
+//		tem_up->Delete();
+//		tem_down->Delete();
 	}
 }
 
@@ -171,8 +173,8 @@ TH1* stackHist::drawDiff(TString opt ="", TString addOpt = "hist"){
 		}
 	}
 	hst_up->Draw();
-	hst_down->Draw("same");
 	stackConfig(hst_up);
+	hst_down->Draw("same");
 	hst_up->GetXaxis()->SetRangeUser(xmind, xmaxd);
 	hst_up->SetMinimum(ymind);
 	hst_up->SetMaximum(ymaxd);
