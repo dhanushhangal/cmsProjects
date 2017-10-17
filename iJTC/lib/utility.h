@@ -18,6 +18,13 @@
 #include "TLine.h"
 #endif
 
+#ifndef ROOT_TLatex
+#include "TLatex.h"
+#endif
+
+#ifndef ROOT_TString
+#include "TString.h"
+#endif
 #include <iomanip> // setprecision
 #include <sstream>
 

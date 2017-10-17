@@ -23,10 +23,10 @@
 #include "TEnv.h"
 
 #include "TrkCorr_July22_Iterative_pp_eta2p4/getTrkCorr.h"
-//#include "TrkCorr_Jun7_Iterative_PbPb_etaLT2p4/getTrkCorr.h"
+#include "TrkCorr_Jun7_Iterative_PbPb_etaLT2p4/getTrkCorr.h"
 
-#include "trkCorrTable/xiaoTrkCorr.h"
-#include "trkCorrTable/xiaoTrkCorr_fineBin.h"
+#include "corrTable/xiaoTrkCorr.h"
+#include "corrTable/xiaoTrkCorr_fineBin.h"
 
 using namespace std;
 
@@ -116,7 +116,7 @@ vector <double> dijet_evi;
 vector <double> dijet_vz;
 vector <double> dijet_cent;
 
-#include "hist_class_def_HT_bjet.h"
+#include "lib/hist_class_def_HT_bjet.h"
 
 //****************************************
 //        ALL CUTS ARE HERE!
@@ -201,6 +201,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
         //switch between Xiao's loose (b-jet) and tight (inclusive-jet) cuts
         bool doTightCuts = false;
         bool doCymbalTrkCorrs = true;
+	unsigned int meptrig = 200;
     //*********************************************
 
         if(is_data){ doGenJets = false; doGenTracks = false; }
@@ -315,7 +316,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
             else{
                 if(is_data) xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_noVertex_data.root");
                // else xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_noVertex.root");
-                else xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_noVertex.root");
+                else xtc = new xiaoTrkCorr("corrTable/patched_corrTable_cymbal_noDCAcuts.root");
             }
         }
 
@@ -343,7 +344,6 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 	//-----------------------------------------------------------------------
 
         int entryCalls=0;
-	unsigned int meptrig = 25;
 
 	gRandom->SetSeed(0);
 	const int nCentMixBins=40;
@@ -1267,11 +1267,14 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
       cout<<"Ready to write"<<endl;
       
       TString out_name;
+/*
       if(!is_data){
           if(!is_pp) out_name = (TString) (dataset_type_strs[globalCode+1] + "_PbPb.root");
           else out_name = (TString)"Pythia_pp.root";
       }
       else out_name = (TString) (dataset_type_strs[globalCode+1] + "_PbPb.root");
+*/
+      out_name = "correlation.root";
       TFile *out_file = new TFile(out_name, "RECREATE");
       out_file->cd();
       
