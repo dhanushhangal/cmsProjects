@@ -32,7 +32,7 @@ namespace jetTrack{
 	}
 	namespace correction{
 		// no dca cut correction
-		xiaoTrkCorr* trkc= new xiaoTrkCorr("../corrTable/patched_corrTable_cymbal_noDCAcuts.root");
+		xiaoTrkCorr* trkc= new xiaoTrkCorr("/Users/tabris/cmsProjects/iJTC/corrTable/patched_corrTable_cymbal_noDCAcuts.root");
 		// broder bin correction
 		//xiaoTrkCorr* trkc= new xiaoTrkCorr("../dataSet/corrTableCymbal/inputCorr_cymbalTune.root");
 		float trk_corr(inputTree *t, int j ){
@@ -45,7 +45,7 @@ namespace jetTrack{
 			return trkc->getTrkCorr(t->trkPt->at(j), t->trkEta->at(j), t->trkPhi->at(j),t->hiBin);	
 		}
 	}
-/*
+	/*
 	*/
 
 	namespace trackingCorrConfig{
@@ -131,8 +131,8 @@ namespace jetTrack{
 		////if ( trkPtError/trkPt>=0.1) return 1;
 		////if ( trkPtError/trkPt>=0.3) return 1;
 		////		if (TMath::Abs(trkEta)>1.6) return 1; // check mid-rapidity
-		if ( TMath::Abs(trkDz/trkDzError) >=3) return 1;
-		if ( TMath::Abs(trkDxy/trkDxyError) >=3) return 1;
+		//if ( TMath::Abs(trkDz/trkDzError) >=3) return 1;
+		//if ( TMath::Abs(trkDxy/trkDxyError) >=3) return 1;
 		if (float(trkChi2)/float(trkNdof)/float(trkNlayer)>0.15) return 1;
 		float Et = (pfHcal+pfEcal)/TMath::CosH(trkEta);
 		if (!(trkPt<20 || (Et>0.5*trkPt))) return 1;
