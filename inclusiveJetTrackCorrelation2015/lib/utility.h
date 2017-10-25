@@ -20,6 +20,7 @@
 
 #include <iomanip> // setprecision
 #include <sstream>
+#include <stdio.h>
 
 class padPolisher{
 	public : 
@@ -112,6 +113,24 @@ TH1D* xRebin(TH1D* h, int nbin, const float * bin){
 	hnew ->SetName(hname);
 	*h=*hnew;
 	return hnew;
+}
+
+void h1Symm(TH1D &h, float x , float y){
+	int nl = h.FindBin(x);
+	int nr = h.FindBin(y);
+	int midl = floor(float(nr+nl)/2); 
+	int midr =  ceil(float(nr+nl)/2); 
+	cout<<midl<<endl;
+	float err, cont;
+	for(int i=0; i<midl; ++i){
+		cont = (h.GetBinContent(midl-i)+h.GetBinContent(i+midr))/2;
+		err  = (h.GetBinError(midl-i)  +h.GetBinError(midr+i))/2;
+		h.SetBinContent(midl-i, cont);
+		h.SetBinContent(midr+i, cont);
+		h.SetBinError(midl-i, err);
+		h.SetBinError(midr+i, err);
+	}
+	return;
 }
 
 #endif

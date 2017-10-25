@@ -4,7 +4,7 @@
 using namespace jetTrack;
 void corrMaker(){
 	loadConfig();
-	TFile *f = TFile::Open("../../dataSet/corrScan_Cymbal_noDCAcuts.root");
+	TFile *f = TFile::Open("../../dataSet/corrScan_cymbal_noDCA_HPOn.root");
 	auto a= new trackingCorr(f);
 	a->Read();
 	//do symmetrization;

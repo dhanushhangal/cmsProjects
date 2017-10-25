@@ -118,7 +118,7 @@ TH2D* signalFactoryBase::signalMaker(TH2D* signalH2, TH2D* meH2, float sideMin, 
 	TH2D* mix= mixingTableMaker(meH2, doSmoothME);
 	signal->Divide(mix);
 	TH2D* bkg = (TH2D*) getV2Bkg(signal,sideMin , sideMax );
-	signal->Add(signal, bkg, 1, -1);
+//	signal->Add(signal, bkg, 1, -1);
 	return signal;
 }
 
