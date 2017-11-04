@@ -49,21 +49,26 @@ class multiPad: public baseCanvas{
 		tl = new TLine();
 		doFrame=false;
 	}
-		void addHist(TH1* h, int row, int col);
+		void addHist(TH1* h, int row, int col, TString opt= "");
 		void draw();
 		void useFrame();
 
 	public :
 		std::multimap<int ,TH1*> buff;
+		std::map<TH1*, TString> buf_opt;
 		TLine *tl;
 		TH1* hframe;
 		bool doFrame;
 };
 
-void multiPad::addHist(TH1* h, int row, int col){
+void multiPad::addHist(TH1* h, int row, int col, TString opt){
 	if(col!=1) h->GetYaxis()->SetLabelSize(0);
+	else h->GetYaxis()->SetLabelSize(0.1);
 	if(row!=nrow) h->GetXaxis()->SetLabelSize(0.);
-	buff.insert(std::pair<int, TH1*> ((row-1)*ncol+col, h)); }
+	else  h->GetXaxis()->SetLabelSize(0.08);
+	buff.insert(std::pair<int, TH1*> ((row-1)*ncol+col, h)); 
+	buf_opt.insert(std::pair<TH1*, TString > (h, opt));
+}
 
 void multiPad::draw(){
 //	this->Draw();
@@ -74,8 +79,10 @@ void multiPad::draw(){
 		ii = buff.equal_range(n);
 		for(it = ii.first; it != ii.second; ++it){
 			cout<<it->second->GetName()<<endl;
-			if(it == ii.first) (it->second)->Draw();
-			else (it->second)->Draw("same");
+//			gPad->SetLogy();
+			TString opt = buf_opt.at(it->second);
+			if(it != ii.first) opt = "same "+opt;
+			(it->second)->Draw(opt);
 		}
 	}
 	this->cd(1);

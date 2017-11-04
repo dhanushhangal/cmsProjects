@@ -120,7 +120,6 @@ void h1Symm(TH1D &h, float x , float y){
 	int nr = h.FindBin(y);
 	int midl = floor(float(nr+nl)/2); 
 	int midr =  ceil(float(nr+nl)/2); 
-	cout<<midl<<endl;
 	float err, cont;
 	for(int i=0; i<midl; ++i){
 		cont = (h.GetBinContent(midl-i)+h.GetBinContent(i+midr))/2;

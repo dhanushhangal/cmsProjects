@@ -23,7 +23,7 @@ class signalFactoryBase {
 		TH2D* mixingTableMaker(TH2D* mix, bool doSmooth = true);
 		TH2D* getV2Bkg(TH2D* signal, float sideMin=1.5 ,float sideMax = 2.5);
 		TH2D* signalMaker(TH2D* signalH2, TH2D* meH2, float sideMin, float sideMax, bool doSmoothME = true);
-		void drIntegral(TH2D* signal, TH1D* drDist);
+		void drIntegral(TH2D* signal, TH1D* drDist, bool isStatErr = true);
 		TH1D* drDistMaker(TH2D* signal, TString name, TString title, int nbin, const float * bins);
 		TH1D* drGeoTest(TH2D* signal, TH1D* drDist);
 	public : 
@@ -118,16 +118,21 @@ TH2D* signalFactoryBase::signalMaker(TH2D* signalH2, TH2D* meH2, float sideMin, 
 	TH2D* mix= mixingTableMaker(meH2, doSmoothME);
 	signal->Divide(mix);
 	TH2D* bkg = (TH2D*) getV2Bkg(signal,sideMin , sideMax );
-//	signal->Add(signal, bkg, 1, -1);
+	signal->Add(signal, bkg, 1, -1);
 	return signal;
 }
 
-void signalFactoryBase::drIntegral(TH2D* signal, TH1D* drDist){
+void signalFactoryBase::drIntegral(TH2D* signal, TH1D* drDist, bool isStatError){
 	float content;
 	float error;
 	float width;
 	float dr;
 	float xwidth, ywidth;
+	drDist->Sumw2();
+	for(int i=1; i<drDist->GetNbinsX()+1;i++){
+		drDist->SetBinContent(i, 0);
+		drDist->SetBinError(i, 0);
+	}
 	for(int jx=0; jx<signal->GetNbinsX(); jx++){
 		for(int jy=0; jy<signal->GetNbinsY(); jy++){
 			dr = sqrt( pow(signal->GetXaxis()->GetBinCenter(jx),2) +\
@@ -137,9 +142,21 @@ void signalFactoryBase::drIntegral(TH2D* signal, TH1D* drDist){
 			// integrand f(x,y)dxdy
 			content = signal->GetBinContent(jx,jy)*xwidth*ywidth;
 			if( content ) {
-			error = sqrt(pow(drDist->GetBinError(drDist->FindBin(dr)),2)+\
-					pow(signal->GetBinError(jx,jy)*xwidth*ywidth,2));
 				drDist->Fill(dr, content);
+				if(!isStatError){
+					error = sqrt(pow(drDist->GetBinError(drDist->FindBin(dr)),2)+\
+						pow(signal->GetBinError(jx,jy)*xwidth*ywidth,2));
+				}
+				else {
+					float err = signal->GetBinError(jx,jy)*xwidth*ywidth/content;
+				//	if(err > 1) {
+				//		error =drDist->GetBinError(drDist->FindBin(dr));
+				//	}
+				//	else {	
+						error = sqrt(pow(drDist->GetBinError(drDist->FindBin(dr)),2)+\
+								pow(err,2));
+				//	}
+				}
 				drDist->SetBinError(drDist->FindBin(dr), error);
 			}
 		}
@@ -149,7 +166,8 @@ void signalFactoryBase::drIntegral(TH2D* signal, TH1D* drDist){
 		error= drDist->GetBinError(i);
 		width= drDist->GetBinWidth(i);
 		drDist->SetBinContent(i, content/width);
-		drDist->SetBinError(i, error/width);
+		if( !isStatError) drDist->SetBinError(i, error/width);
+		else drDist->SetBinError(i, content*error/width);
 	}
 	return;
 }
@@ -165,20 +183,22 @@ TH1D* signalFactoryBase::drGeoTest(TH2D* signal, TH1D* drDist){
 	TH1D* drCounts = (TH1D*) drDist->Clone(temp+"_counts");
 	TH1D* area_ideal = (TH1D*) drDist->Clone("ideal_phase");
 	float dr;
-	for(int jx=0; jx<signal->GetNbinsX(); jx++){
-		for(int jy=0; jy<signal->GetNbinsY(); jy++){
+	float da;
+	for(int jx=1; jx<signal->GetNbinsX()+1; jx++){
+		for(int jy=1; jy<signal->GetNbinsY()+1; jy++){
 			dr = sqrt( pow(signal->GetXaxis()->GetBinCenter(jx),2) +\
 					pow(signal->GetYaxis()->GetBinCenter(jy),2));
-			drCounts->Fill(dr); // get how many bins in the dr region
+			da = (signal->GetXaxis()->GetBinWidth(jx))*(signal->GetYaxis()->GetBinWidth(jy));
+			drCounts->Fill(dr,da); // get aera in the dr region
 		}
 	}
-	drCounts->Scale((signal->GetXaxis()->GetBinWidth(1))*(signal->GetYaxis()->GetBinWidth(1)));
 	for(int i=1; i<drCounts->GetNbinsX()+1; ++i){
 		float rlow = area_ideal->GetBinLowEdge(i);
 		float width = area_ideal->GetBinWidth(i);
 		float rup = rlow + width;
-		drCounts->SetBinContent(i, drCounts->GetBinContent(i)/width);
-		area_ideal->SetBinContent(i, TMath::Pi()*(pow(rup,2)-pow(rlow,2))/width); 
+		cout<<rup<<endl;
+//		drCounts->SetBinContent(i, drCounts->GetBinContent(i));
+		area_ideal->SetBinContent(i, TMath::Pi()*(pow(rlow+width,2)-pow(rlow,2))); 
 		area_ideal->SetBinError(i, 0); 
 	}
 	TH1D* geoCorr = (TH1D*) area_ideal ->Clone("geoCorr");
@@ -195,7 +215,7 @@ TH1D* signalFactoryBase::drGeoTest(TH2D* signal, TH1D* drDist){
 	auto tl = new TLine();
 	tl->SetLineStyle(2);
 	dp->y2min=0.71; dp->y2max=1.29;
-	dp->xmin=0; dp->xmax=0.99;
+//	dp->xmin=0; dp->xmax=0.99;
 	dp->setXtitle("#Deltar");
 	dp->setYtitle("#DeltaS/#Deltar");
 	dp->Draw();
