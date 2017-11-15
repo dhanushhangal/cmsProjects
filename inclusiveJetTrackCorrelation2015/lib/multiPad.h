@@ -7,6 +7,9 @@
 #include "TCanvas.h"
 #endif
 
+//#ifndef xTHD12_H
+//#include "xTHD12.h"
+//#endif
 
 class baseCanvas: public TCanvas{
 
@@ -24,8 +27,7 @@ class baseCanvas: public TCanvas{
 		cname = hname;
 		tx = new TLatex();
 	}
-		void histoConfig(TH1* h);
-
+		void histoConfig(TH1* h); 
 	public :
 		const int nrow, ncol;
 		TPad *pad;
