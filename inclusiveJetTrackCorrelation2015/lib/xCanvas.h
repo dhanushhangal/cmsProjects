@@ -3,11 +3,11 @@
 #ifndef xCanvas_H
 #define xCanvas_H
 
-class xCanvas : public xCanvas{
-pulic :
-	xCanvas(TString cname, TString title, float w, float h): 
+class xCanvas : public TCanvas{
+	public :
+		xCanvas(TString cname, TString title, float w, float h): 
 			name(cname), cw(w), ch(h),TCanvas(cname, title, w, h){
-		}
+			}
 		void divide(int, int);
 		void CD(int);
 	public :

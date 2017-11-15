@@ -51,12 +51,12 @@ void signalFactory::getSignal(TString name, TString hname){
 	if(hname ) hname = fname;
 	//int nbin = 21;
 	//const float xdrbins[22] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.675, 0.7, 0.725, 0.75, 0.8,  0.85,  0.9, 1};
-	int nbin = 26;
-	const float xdrbins[27] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5,0.525, 0.55, 0.575,0.6,0.625, 0.65, 0.675, 0.7, 0.725, 0.75,0.775, 0.8, 0.825,  0.85,  0.9, 1};
+	int nbin = 19;
+	//const float xdrbins[27] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5,0.525, 0.55, 0.575,0.6,0.625, 0.65, 0.675, 0.7, 0.725, 0.75,0.775, 0.8, 0.825,  0.85,  0.9, 1};
 	//int nbin = 19;
-	//const float xdrbins[20] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45,0.5, 0.55, 0.6, 0.65,0.7, 0.75, 0.8,0.85,0.9, 1};
-	//const float xdrbins[20] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7,0.75, 0.8,0.85,0.9, 1};
-	float phiSmin = 1.5, phiSmax=2.5;// sideBand region in dphi 
+	const float xdrbins[20] = {0, 0.05, 0.1, 0.15, 0.2 ,0.25,0.3,0.35,0.4, 0.45,0.5, 0.55, 0.6, 0.65,0.7, 0.75, 0.8,0.85,0.9, 1};
+
+	float phiSmin = 1.2, phiSmax=2.2;// sideBand region in dphi 
 	signal_deta = new TH1D*[4*(signal->nz-1)];
 	signal_dphi = new TH1D*[4*(signal->nz-1)];
 	signal_dr   = new TH1D*[4*(signal->nz-1)];
@@ -117,6 +117,8 @@ void signalFactory::drawDebug(){
 	float xmin_dphi=-1.5, xmax_dphi=1.5;
 	float drmin=0, drmax=0.99;
 
+	float etaBin [16]={-1.5, -1, -0.8, -0.6, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1, 1.5};
+
 	auto mp_deta = new multiPad("mp_deta", "", signal->nz-1, 4);
 	auto mp_dphi = new multiPad("mp_dphi", "", signal->nz-1, 4);
 	auto mp_dr = new multiPad("mp_dr", "", signal->nz-1, 4);
@@ -129,7 +131,8 @@ void signalFactory::drawDebug(){
 			histoConfig(signal_dphi[i*4+j],xmin_dphi, xmax_dphi);
 			//histoConfig(signal_dr  [i*4+j],drmin, drmax);
 			histoConfig(signal_drGeo[i*4+j],drmin, drmax);
-			histoConfig(signal_sideBand[i*4+j],xmin_deta, xmax_deta);
+			signal_sideBand[i*4+j]->Rebin();
+			histoConfig(signal_sideBand[i*4+j], -3, 3);
 			mp_deta->addHist(signal_deta[i*4+j], i+1, 4-j);
 			mp_dphi->addHist(signal_dphi[i*4+j], i+1, 4-j);
 			//mp_dr  ->addHist(signal_dr  [i*4+j], i+1, 4-j);
@@ -147,6 +150,7 @@ void signalFactory::drawDebug(){
 	mp_dphi->SaveAs(dumpPath+fname+"_sigDebug_dphi."+dumpType);
 	mp_dr  ->SaveAs(dumpPath+fname+"_sigDebug_dr."  +dumpType);
 	mp_sb  ->SaveAs(dumpPath+fname+"_sigDebug_sb."  +dumpType);
+	mp_sb  ->SaveAs(dumpPath+fname+"_sigDebug_sb.pdf");
 }
 
 void signalFactory::histoConfig(TH1* h, float x1, float x2){

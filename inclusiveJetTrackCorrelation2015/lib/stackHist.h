@@ -6,6 +6,7 @@
 #include "THStack.h"
 #include "TCanvas.h"
 #include "vector"
+#include "iostream"
 
 class stackHist{
 	public:
@@ -127,7 +128,7 @@ TH1* stackHist::sumOver(){
 	return hist_sum;
 }
 
-TH1* stackHist::drawStack(TString opt ="", TString addOpt ){
+TH1* stackHist::drawStack(TString opt, TString addOpt ){
 	setFillColor();
 	if(opt == ""){
 		for(auto it = hist_trunk.begin(); it !=hist_trunk.end(); ++it){
@@ -150,7 +151,7 @@ TH1* stackHist::drawStack(TString opt ="", TString addOpt ){
 	return hst->GetHistogram();
 }
 
-TH1* stackHist::drawDiff(TString opt ="", TString addOpt = "hist"){
+TH1* stackHist::drawDiff(TString opt, TString addOpt){
 	setFillColor();
 	if(opt == ""){
 		for(auto it = hist_trunk_up.begin(); it !=hist_trunk_up.end(); ++it){
