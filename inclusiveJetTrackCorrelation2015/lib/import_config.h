@@ -174,7 +174,7 @@ namespace kurt_reg{
 namespace hallie_reg{
 		//TFile * py_f = new TFile("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/Jet_Shapes_hallie.root");
 		TFile * py_f = new TFile("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/Jet_Shapes_kurt_pp.root");
-		TFile * py_proj_f = new TFile("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/Particle_Yields.root");
+		TFile * py_proj_f = new TFile("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/Particle_Yields_combined.root");
 		//TFile * py_proj_f = new TFile("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/Particle_Yields_fixErr.root");
 		TFile * js_f = new TFile("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/Jet_Shapes_pTweighted.root");
 		TString trk_tag[] = {"TrkPt07", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt20","TrkPt300"};
@@ -334,6 +334,7 @@ namespace hallie_reg{
 						for(int j=0; j<4; ++j){
 								tmp = "Proj_dEta_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1]+"_Rebin";
 								py_deta[i][j]=(TH1D*)py_proj_f->Get(tmp);
+								cout<<py_deta[i][j]->GetName()<<endl;
 								tmp = "Proj_dPhi_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1]+"_Rebin";
 								py_dphi[i][j]=(TH1D*)py_proj_f->Get(tmp);
 								tmp = "dEta_Syst_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1];
@@ -344,14 +345,54 @@ namespace hallie_reg{
 				}
 				for(int j=0; j<5; ++j){
 						py_deta_all[j]=(TH1D*) py_deta[0][j]->Clone(Form("py_deta_all_%d",j));
-						py_dphi_all[j]=(TH1D*) py_dphi[0][j]->Clone(Form("py_deta_all_%d",j));
+						py_dphi_all[j]=(TH1D*) py_dphi[0][j]->Clone(Form("py_dphi_all_%d",j));
+						py_deta_err_all[j]=(TH1D*) py_deta_err[0][j]->Clone(Form("py_deta_err_all_%d",j));
+						py_dphi_err_all[j]=(TH1D*) py_dphi_err[0][j]->Clone(Form("py_dphi_err_all_%d",j));
 						for(int i=1;i<8; ++i){
 								py_deta_all[j]->Add(py_deta[i][j]);
 								py_dphi_all[j]->Add(py_dphi[i][j]);
+								py_deta_err_all[j]->Add(py_deta_err[i][j]);
+								py_dphi_err_all[j]->Add(py_dphi_err[i][j]);
 						}
 				}
 		}
 
+		void getPY_proj2(){
+				for(int i=0;i<8; ++i){
+						tmp = "Proj_dEta_pp_"+trk_tag[i]+"_"+trk_tag[i+1];
+						py_deta[i][4]=(TH1D*)py_proj_f->Get(tmp);
+						tmp = "Proj_dPhi_pp_"+trk_tag[i]+"_"+trk_tag[i+1];
+						py_dphi[i][4]=(TH1D*)py_proj_f->Get(tmp);
+						tmp = "dEta_Syst_pp_Cent0_Cent10_"+trk_tag[i]+"_"+trk_tag[i+1];
+						py_deta_err[i][4]=(TH1D*)py_proj_f->Get(tmp);
+						tmp = "dPhi_Syst_pp_Cent0_Cent10_"+trk_tag[i]+"_"+trk_tag[i+1];
+						//cout<<tmp<<endl;
+						py_dphi_err[i][4]=(TH1D*)py_proj_f->Get(tmp);
+						for(int j=0; j<4; ++j){
+								tmp = "Proj_dEta_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1];
+								py_deta[i][j]=(TH1D*)py_proj_f->Get(tmp);
+								cout<<py_deta[i][j]->GetName()<<endl;
+								tmp = "Proj_dPhi_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1];
+								py_dphi[i][j]=(TH1D*)py_proj_f->Get(tmp);
+								tmp = "dEta_Syst_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1];
+								py_deta_err[i][j]=(TH1D*)py_proj_f->Get(tmp);
+								tmp = "dPhi_Syst_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1];
+								py_dphi_err[i][j]=(TH1D*)py_proj_f->Get(tmp);
+						}
+				}
+				for(int j=0; j<5; ++j){
+						py_deta_all[j]=(TH1D*) py_deta[0][j]->Clone(Form("py_deta_all_%d",j));
+						py_dphi_all[j]=(TH1D*) py_dphi[0][j]->Clone(Form("py_dphi_all_%d",j));
+						py_deta_err_all[j]=(TH1D*) py_deta_err[0][j]->Clone(Form("py_deta_err_all_%d",j));
+						py_dphi_err_all[j]=(TH1D*) py_dphi_err[0][j]->Clone(Form("py_dphi_err_all_%d",j));
+						for(int i=1;i<8; ++i){
+								py_deta_all[j]->Add(py_deta[i][j]);
+								py_dphi_all[j]->Add(py_dphi[i][j]);
+								py_deta_err_all[j]->Add(py_deta_err[i][j]);
+								py_dphi_err_all[j]->Add(py_dphi_err[i][j]);
+						}
+				}
+		}
 		void getJS(){
 				for(int i=0;i<9; ++i){
 						tmp = "JetShape2_Yield_BkgSub_pTweightedInclusive_pp_"+
@@ -411,7 +452,7 @@ namespace hallie_reg{
 				float ncent = 4;
 				if(ispp) ncent =1;
 				for(int i=0;i<ncent; ++i){
-						for(int j=0;j<9; ++j){
+						for(int j=0;j<8; ++j){
 								tmp = "Yield_BkgSub_"+cent_tag[i]+"_"+cent_tag[i+1]+"_Pt100_Pt1000_"+
 										trk_tag[j]+"_"+trk_tag[j+1];
 								py[j][i]=(TH2D*)bkgSub_f->Get(tmp);

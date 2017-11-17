@@ -50,21 +50,6 @@ namespace plottingInput{
 		TString trk_tag[] = {"TrkPt07", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt20","TrkPt300"};
 		TString cent_tag[]= {"Cent0","Cent10","Cent30","Cent50","Cent100"};
 		TString path = "/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/";
-
-		//	TFile *yield_proj_syst_f = TFile::Open(path+"yield_proj_syst_err_old.root");//reproduce old version
-
-
-		//TFile *yield_proj_pb_f = TFile::Open(path+"Particle_Yields_fixErr.root");
-		//TFile *yield_proj_pb_f = TFile::Open(path+"Particle_Yields_fixErr.root");
-
-		//TFile *yield_dr_pb_f = TFile::Open(path+"Jet_Shapes_geoCorr.root");
-
-		//TFile *yield_dr_pb_f = TFile::Open(path+"Jet_Shapes_fixErr.root");
-		//TFile *yield_dr_pp_f = TFile::Open(path+"Jet_Shapes_kurt_pp.root");
-		//TFile *js_dr_pb_f = TFile::Open(path+"Jet_Shapes_pTweighted_v3.root");
-		//TFile *js_dr_pp_f = TFile::Open(path+"Jet_Shapes_pTweighted_v3.root");
-
-
 		// nominal plotting input files 
 		//loading syst error
 		TFile *js_syst_f = TFile::Open(path+"js_syst_err.root");
@@ -74,8 +59,8 @@ namespace plottingInput{
 		TFile *js_dr_pp_f = TFile::Open(path+"Jet_Shapes_pTweighted_kurt_pp.root");
 		TFile *yield_dr_pb_f = TFile::Open(path+"Jet_Shapes_fixErr.root");
 		TFile *yield_dr_pp_f = TFile::Open(path+"Jet_Shapes_kurt_pp.root");
-		TFile *yield_proj_pb_f = TFile::Open(path+"Particle_Yields_final.root");
-		TFile *yield_proj_pp_f = TFile::Open(path+"Particle_Yields_for_pp.root");
+		TFile *yield_proj_pb_f = TFile::Open(path+"Particle_Yields_combined.root");
+		TFile *yield_proj_pp_f = TFile::Open(path+"Particle_Yields_for_pp_and_stat_err.root");
 
 		void changeErr(TH1D* h , TH1D* err){
 				for(int k=1; k<h->GetNbinsX()+1;++k){
@@ -86,13 +71,16 @@ namespace plottingInput{
 
 		TH1D* etaBin (TH1D* h ){
 				Double_t etabin[] = {-2.5,-2.,-1.5,  -1.,  -0.8,  -0.6,  -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.6,  0.8, 1., 1.5,2.,2.5};
+				//Double_t etabin[] = {-2.,-1.5,  -1.,  -0.8,  -0.6,  -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.6,  0.8, 1., 1.5,2.};
+				//Double_t etabin[] = {-2.5,-2.,-1.5,  -1.,  -0.8,  -0.6,  -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.6,  0.8, 1., 1.5,2.,2.5};
 				//Double_t etabin[] = {-3, -2.5,-2.,-1.5,  -1.,  -0.8,  -0.6,  -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.6,  0.8, 1., 1.5,2.,2.5, 3};
 				TString tmp = h->GetName();
 				tmp = tmp+"_rebin";
-				TH1D* hn = new TH1D(tmp, "", 19, etabin);
+				TH1D* hn = new TH1D(tmp, "", sizeof(etabin) / sizeof(Double_t)-1, etabin);
 				for(int k=1; k<hn->GetNbinsX()+1; ++k){
-						hn->SetBinContent(k, h->GetBinContent(k+1));
-						hn->SetBinError(k, h->GetBinError(k+1));
+						int bin = h->FindBin(hn->GetBinCenter(k));
+						hn->SetBinContent(k, h->GetBinContent(bin));
+						hn->SetBinError(k, h->GetBinError(bin));
 				}
 				return (TH1D*) hn;
 		}
@@ -203,6 +191,7 @@ namespace plottingInput{
 						for(int j=0; j<4; ++j){
 								tmp = "Proj_dEta_PbPb_"+cent_tag[j]+"_"+cent_tag[j+1]+"_"+trk_tag[i]+"_"+trk_tag[i+1]+"_Rebin";
 								py_deta[i][j]=(TH1D*)yield_proj_pb_f->Get(tmp);
+								py_deta[i][j]=(TH1D*) etaBin(py_deta[i][j]);
 								py_deta_err[i][j]=(TH1D*)yield_proj_pb_f->Get(tmp)->Clone(Form("Yield_dEta_pb_syst_Error_%d_%d",i,j));
 								h=(TH1D*)yield_proj_syst_f->Get(Form("Yield_dEta_Pb_Syst_Error_%d_%d",i,j));
 								h=(TH1D*) etaBin(h);

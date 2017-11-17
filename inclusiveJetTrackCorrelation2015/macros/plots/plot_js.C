@@ -81,6 +81,10 @@ void plot_js(){
 				}
 		}
 
+
+
+
+
 		for(int i=0; i<3; ++i){
 				for(int j=0; j<4; ++j){
 				//cout<<i<<", "<<j<<endl;
@@ -108,6 +112,10 @@ void plot_js(){
 				}
 				tll->AddEntry(sub_ratio[i][0], leg[i]);
 		}
+
+		cout<<sub_ratio[0][0]->GetName()<<endl;
+		cout<<"err = "<<sub_ratio[0][0]->GetBinError(sub_ratio[0][0]->FindBin(0.95))<<endl;;
+		cout<<js_dr_err_all[4]->Integral("width")/js_dr_err_all[0]->Integral("width")<<endl;
 
 		auto c = new auxi_canvas("c", "", 2500, 2000);
 		c->SetMargin(0.06, 0.01, 0.08, 0.02);

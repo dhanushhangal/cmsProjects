@@ -89,9 +89,9 @@ void errSummary(){
 						cphi->addError(pb_dphi_err[i][j],i+1, 5-j);
 				}
 		}
-		ceta->drawSummary(-2.5, 2.49);
+		ceta->drawSummary(-1.99, 1.99);
 		cphi->drawSummary(-1.5, 1.49);
-		cpb_dr->drawSummary(0, 0.99);
+		cpb_dr->drawSummary(0, 0.99, 0);
 		TString cent_tag[] = {"PbPb(0-10%)", "PbPb(10-30%)", "PbPb(30-50%)", "PbPb(50-100%)", "pp reference"};
 		for(int i=0; i<8; ++i){
 				if(i==7 ) tx.SetTextSize(0.08);
@@ -109,8 +109,8 @@ void errSummary(){
 						}
 				}
 		}
-		ceta->SaveAs("py_deta_err_summary.pdf");
-		cphi->SaveAs("py_dphi_err_summary.pdf");
+		ceta  ->SaveAs("py_deta_err_summary.pdf");
+		cphi  ->SaveAs("py_dphi_err_summary.pdf");
 		cpb_dr->SaveAs("py_dr_err_summary.pdf");
 		TFile *wf = TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/yield_proj_syst_err.root","recreate");
 		//TFile *wf = TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/yield_proj_syst_err_old.root","recreate");

@@ -196,7 +196,7 @@ class JTCSystCanvas : public baseCanvas {
 				};
 				void addError(JTCSystError *err, int row, int col);
 				void drawFit();
-				void drawSummary(float x, float y);
+				void drawSummary(float x, float y, bool symm=1);
 				void adjustPlotRange(TH1D* h, double center);
 				JTCSystError * getErr(int i, int j){
 						return list.at(index(i,j)-1);
@@ -213,10 +213,12 @@ void JTCSystCanvas::addError(JTCSystError *err, int row, int col){
 		return;	
 }
 
-void JTCSystCanvas::drawSummary(float x, float y){
+void JTCSystCanvas::drawSummary(float x, float y, bool symm){
 		cout<<list.size()<<endl;
 		for(int i=1; i<nrow+1; ++i){
-				float maximum= getErr(i,ncol)->error->GetMaximum()*1.2;
+				float maximum;
+				if(!symm) maximum= getErr(i,ncol)->error->GetMaximum()*1.2;
+				else maximum= getErr(i,ncol)->error->GetBinContent(getErr(i,ncol)->error->FindBin(0))*1.2;
 				for(int j=1; j<ncol+1; ++j){
 						cd(index(i,j));
 						cout<<i<<", "<<j<<", "<<index(i,j)<<endl;
