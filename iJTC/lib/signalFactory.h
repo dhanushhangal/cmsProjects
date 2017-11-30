@@ -22,9 +22,8 @@ class signalFactory : public signalFactoryBase {
 		}
 		void readSignal(TString name, TString title, TFile *f , int nz1, float *zbin1, int nw1, float *wbin1);
 		void readMixing(TString name, TString title, TFile *f , int nz1, float *zbin1, int nw1, float *wbin1);
-		void getSignal(TString hname = "");
+		void getSignal(TString name, TString hname = "");
 		void drawDebug();
-		void save();
 		void histoConfig(TH1*, float x1, float x2);
 	public :
 		xthd4 * signal;
@@ -48,16 +47,16 @@ void signalFactory::readMixing(TString name, TString title, TFile *f , int nz1, 
 	mixing->Read(name, title, f , nz1, zbin1,  nw1, wbin1);
 }
 
-void signalFactory::getSignal( TString hname){
+void signalFactory::getSignal(TString name, TString hname){
 	if(hname ) hname = fname;
 	//int nbin = 21;
 	//const float xdrbins[22] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.675, 0.7, 0.725, 0.75, 0.8,  0.85,  0.9, 1};
-	int nbin = 26;
-	const float xdrbins[27] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5,0.525, 0.55, 0.575,0.6,0.625, 0.65, 0.675, 0.7, 0.725, 0.75,0.775, 0.8, 0.825,  0.85,  0.9, 1};
+	int nbin = 19;
+	//const float xdrbins[27] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5,0.525, 0.55, 0.575,0.6,0.625, 0.65, 0.675, 0.7, 0.725, 0.75,0.775, 0.8, 0.825,  0.85,  0.9, 1};
 	//int nbin = 19;
-	//const float xdrbins[20] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45,0.5, 0.55, 0.6, 0.65,0.7, 0.75, 0.8,0.85,0.9, 1};
-	//const float xdrbins[20] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7,0.75, 0.8,0.85,0.9, 1};
-	float phiSmin = 1.5, phiSmax=2.5;// sideBand region in dphi 
+	const float xdrbins[20] = {0, 0.05, 0.1, 0.15, 0.2 ,0.25,0.3,0.35,0.4, 0.45,0.5, 0.55, 0.6, 0.65,0.7, 0.75, 0.8,0.85,0.9, 1};
+
+	float phiSmin = 1.2, phiSmax=2.2;// sideBand region in dphi 
 	signal_deta = new TH1D*[4*(signal->nz-1)];
 	signal_dphi = new TH1D*[4*(signal->nz-1)];
 	signal_dr   = new TH1D*[4*(signal->nz-1)];
@@ -97,14 +96,28 @@ void signalFactory::getSignal( TString hname){
 			signal_sideBand[i*4+j]->Scale(ybinwidth);
 		}
 	}
-	//TFile *wff= TFile::Open("phaseCorr.root", "recreate");
-	//geoCorr->Write();
+	TFile *wf = TFile::Open(name, "recreate");
+	for(int i=0; i<signal->nz-1; ++i){
+		for(int j=0; j<4; ++j){
+			signal_dr      [i*4+j]->Write();
+			signal_drGeo   [i*4+j]->Write();
+			signal_deta    [i*4+j]->Write();
+			signal_dphi    [i*4+j]->Write();
+			signal_sideBand[i*4+j]->Write();
+			sig            [i*4+j]->Write();
+		}
+	}
+	//	wf->Close();
+	TFile *wff= TFile::Open("phaseCorr.root", "recreate");
+	geoCorr->Write();
 }
 
 void signalFactory::drawDebug(){
 	float xmin_deta=-1., xmax_deta=1.;
 	float xmin_dphi=-1.5, xmax_dphi=1.5;
 	float drmin=0, drmax=0.99;
+
+	float etaBin [16]={-1.5, -1, -0.8, -0.6, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1, 1.5};
 
 	auto mp_deta = new multiPad("mp_deta", "", signal->nz-1, 4);
 	auto mp_dphi = new multiPad("mp_dphi", "", signal->nz-1, 4);
@@ -118,7 +131,8 @@ void signalFactory::drawDebug(){
 			histoConfig(signal_dphi[i*4+j],xmin_dphi, xmax_dphi);
 			//histoConfig(signal_dr  [i*4+j],drmin, drmax);
 			histoConfig(signal_drGeo[i*4+j],drmin, drmax);
-			histoConfig(signal_sideBand[i*4+j],xmin_deta, xmax_deta);
+			signal_sideBand[i*4+j]->Rebin();
+			histoConfig(signal_sideBand[i*4+j], -3, 3);
 			mp_deta->addHist(signal_deta[i*4+j], i+1, 4-j);
 			mp_dphi->addHist(signal_dphi[i*4+j], i+1, 4-j);
 			//mp_dr  ->addHist(signal_dr  [i*4+j], i+1, 4-j);
@@ -127,13 +141,6 @@ void signalFactory::drawDebug(){
 		}
 	}
 
-	mp_deta->baseLine(xmin_deta, 0, xmax_deta, 0);
-	mp_dphi->baseLine(xmin_dphi, 0, xmax_dphi, 0);
-	mp_sb  ->baseLine(xmin_deta, 0, xmax_deta, 0);
-
-	mp_dphi->draw();
-        mp_dr  ->draw();
-	mp_sb  ->draw();
 	mp_deta->draw();
 	mp_dphi->draw();
         mp_dr  ->draw();
@@ -143,6 +150,7 @@ void signalFactory::drawDebug(){
 	mp_dphi->SaveAs(dumpPath+fname+"_sigDebug_dphi."+dumpType);
 	mp_dr  ->SaveAs(dumpPath+fname+"_sigDebug_dr."  +dumpType);
 	mp_sb  ->SaveAs(dumpPath+fname+"_sigDebug_sb."  +dumpType);
+	mp_sb  ->SaveAs(dumpPath+fname+"_sigDebug_sb.pdf");
 }
 
 void signalFactory::histoConfig(TH1* h, float x1, float x2){
@@ -152,18 +160,6 @@ void signalFactory::histoConfig(TH1* h, float x1, float x2){
 	h->GetYaxis()->CenterTitle();
 	h->SetAxisRange(x1,x2, "X");
 	h->GetXaxis()->SetLabelSize(0.05);
-}
-void signalFactory::save(){
-	for(int i=0; i<signal->nz-1; ++i){
-		for(int j=0; j<4; ++j){
-			signal_dr      [i*4+j]->Write();
-			signal_drGeo   [i*4+j]->Write();
-			signal_deta    [i*4+j]->Write();
-			signal_dphi    [i*4+j]->Write();
-			signal_sideBand[i*4+j]->Write();
-			sig            [i*4+j]->Write();
-		}
-	}
 }
 
 #endif

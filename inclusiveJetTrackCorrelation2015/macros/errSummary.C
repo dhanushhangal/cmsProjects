@@ -97,21 +97,21 @@ void errSummary(){
 				if(i==7 ) tx.SetTextSize(0.08);
 				else tx.SetTextSize(0.1);
 				ceta->cd(1+5*i);
-				tx.DrawLatexNDC(0.4, 0.78, trk_tag[i]);
+				tx.DrawLatexNDC(0.3, 0.76, trk_tag[i]);
 				cphi->cd(1+5*i);
-				tx.DrawLatexNDC(0.4, 0.78, trk_tag[i]);
+				tx.DrawLatexNDC(0.3, 0.76, trk_tag[i]);
 				cpb_dr->cd(i*5+1);
-				tx.DrawLatexNDC(0.4, 0.78, trk_tag[i]);
+				tx.DrawLatexNDC(0.3, 0.76, trk_tag[i]);
 				if(i==0 ){
 						for(int j=0;j<5; j++){
 								cpb_dr->cd(5-j);
-								tx.DrawLatexNDC(0.4,0.9, cent_tag[j]);
+								tx.DrawLatexNDC(0.3,0.9, cent_tag[j]);
 						}
 				}
 		}
-		ceta  ->SaveAs("py_deta_err_summary.pdf");
-		cphi  ->SaveAs("py_dphi_err_summary.pdf");
-		cpb_dr->SaveAs("py_dr_err_summary.pdf");
+//		ceta  ->SaveAs("py_deta_err_summary.png");
+//		cphi  ->SaveAs("py_dphi_err_summary.png");
+//		cpb_dr->SaveAs("py_dr_err_summary.png");
 		TFile *wf = TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/yield_proj_syst_err.root","recreate");
 		//TFile *wf = TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/yield_proj_syst_err_old.root","recreate");
 		for(int i=0; i<8; ++i){
@@ -135,6 +135,7 @@ void errSummary(){
 		//add reference 
 		py_f  = TFile::Open("/Users/tabris/cmsProjects/inclusiveJetTrackCorrelation2015/dataSet/Jet_Shapes_v3.root");
 		getPY_dr();
+		getPY_proj();
 		for(int i=0; i<8; ++i){
 				for(int j=0; j<5; ++j){
 						for(int k=1; k<py_dr_err[i][j]->GetNbinsX()+1; ++k){
@@ -142,9 +143,9 @@ void errSummary(){
 								py_dr_err[i][j]->SetBinError(k, 0);
 						}
 						cpb_dr->cd(i*5+5-j);
-						py_dr_err[i][j]->SetLineColor(kRed-6);
-						py_dr_err[i][j]->SetLineStyle(2);
-						py_dr_err[i][j]->SetLineWidth(2);
+						py_dr_err[i][j]->SetLineColor(kRed-3);
+						py_dr_err[i][j]->SetLineStyle(4);
+						py_dr_err[i][j]->SetLineWidth(6);
 						py_dr_err[i][j]->Draw("same");
 				}
 		}
@@ -164,5 +165,5 @@ void errSummary(){
 		l1->Draw();
 		cpb_dr->cd(2);
 		l2->Draw();
-		cpb_dr->SaveAs("py_dr_err_summary_overlay.pdf");
+		cpb_dr->SaveAs("py_dr_err_summary_overlay.png");
 }

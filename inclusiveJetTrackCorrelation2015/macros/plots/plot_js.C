@@ -151,19 +151,22 @@ void plot_js(){
 				sub_ratio[0][i]->SetAxisRange(0., 3.2, "Y");
 				sub_ratio[0][i]->SetAxisRange(0., .99, "X");
 				if( i<3 )  {
-						sub_ratio[0][i]->GetXaxis()->SetTitleOffset(0.8);
-						sub_ratio[0][i]->GetXaxis()->SetTitleSize(0.09);
+						sub_ratio[0][i]->GetXaxis()->SetTitleOffset(0.7);
+						sub_ratio[0][i]->GetXaxis()->SetTitleSize(0.11);
 						sub_ratio[0][i]->GetXaxis()->SetNdivisions(505);
-						sub_ratio[0][i]->GetXaxis()->SetLabelSize(0.08);
+						sub_ratio[0][i]->GetXaxis()->SetLabelSize(0.09);
+						sub_ratio[0][i]->GetXaxis()->SetLabelOffset(0.004);
+						sub_ratio[0][i]->GetXaxis()->SetNdivisions(505);
 				}
 				if(i==3 ){
 						sub_ratio[0][i]->GetXaxis()->SetTitleOffset(0.94);
-						sub_ratio[0][i]->GetXaxis()->SetTitleSize(0.074);
+						sub_ratio[0][i]->GetXaxis()->SetTitleSize(0.085);
 						sub_ratio[0][i]->GetXaxis()->SetNdivisions(505);
-						sub_ratio[0][i]->GetXaxis()->SetLabelOffset(0.016);
-						sub_ratio[0][i]->GetXaxis()->SetLabelSize(0.064);
+						sub_ratio[0][i]->GetXaxis()->SetLabelOffset(0.02);
+						sub_ratio[0][i]->GetXaxis()->SetLabelSize(0.07);
 						sub_ratio[0][i]->GetYaxis()->SetNdivisions(505);
 						sub_ratio[0][i]->GetYaxis()->SetLabelSize(0.07);
+						sub_ratio[0][i]->GetYaxis()->SetLabelOffset(0.02);
 						sub_ratio[0][i]->GetYaxis()->SetTitleOffset(0.9);
 						sub_ratio[0][i]->GetYaxis()->SetTitleSize(0.08);
 						sub_ratio[0][i]->GetYaxis()->SetTitle("#Rho(#Deltar)_{PbPb}/#Rho(#Deltar)_{pp}");
@@ -263,13 +266,14 @@ void plot_js(){
 		box->SetFillColor(kWhite);
 		c->cd(0);
 		box->DrawBox(0.285,.047, 0.3, 0.072);
-		tl->SetTextSize(.025);
-		tl->DrawLatex(0.29, 0.055, "0");
+		tl->SetTextSize(.0268);
 		box->DrawBox(0.518,.047, 0.533, 0.072);
 		box->DrawBox(0.75,.047, 0.765, 0.072);
 
-		tl->DrawLatex(0.523, 0.055, "0");
-		tl->DrawLatex(0.755, 0.055, "0");
+		tl->DrawLatex(0.29, 0.051, "0");
+		tl->DrawLatex(0.523, 0.051, "0");
+		tl->DrawLatex(0.755, 0.051, "0");
+		tl->DrawLatex(0.985, 0.051, "1");
 
 		c->SaveAs("js_dr_new.eps");
 		c->SaveAs("js_dr_new.pdf");
