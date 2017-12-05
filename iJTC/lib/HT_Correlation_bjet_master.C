@@ -30,9 +30,9 @@
 
 using namespace std;
 
-#define nCBins 5
-#define nPtBins 2 
-#define nTrkPtBins 10
+#define nCBins 2
+#define nPtBins 1 
+#define nTrkPtBins 8
 
 float trkPtCut=0.7;
 
@@ -55,15 +55,19 @@ TString data_mc_type_strs[n_data_mc_types] = {"Data","RecoJet_RecoTrack","RecoJe
 int data_mc_type_code = -999;
 
 
-float PtBins[nPtBins+1] = {80, 120,  1000};
-TString PtBin_strs[nPtBins+1] = {"Pt80", "Pt120",  "Pt1000"};
+float PtBins[nPtBins+1] = {120,  1000};
+TString PtBin_strs[nPtBins+1] = {"Pt120",  "Pt1000"};
 
 //inclusive-jet scheme
-float CBins[nCBins+1] = {0, 20, 60, 100, 140, 200};
-TString CBin_strs[nCBins+1] = {"Cent0", "Cent10", "Cent30", "Cent50", "Cent70", "Cent100"};
+float CBins[nCBins+1] = {0, 60,  200};
+TString CBin_strs[nCBins+1] = {"Cent0", "Cent30", "Cent100"};
+//TString CBin_strs[nCBins+1] = {"Cent0", "Cent10", "Cent30", "Cent50", "Cent70", "Cent100"};
 
-float TrkPtBins[nTrkPtBins+1] = {0.5, 0.7, 1, 2, 3, 4, 8, 12, 16, 20, 999};
-TString TrkPtBin_strs[nTrkPtBins+1] = {"TrkPt0p5", "TrkPt0p7", "TrkPt1", "TrkPt2", "TrkPt3", "TrkPt4", "TrkPt8", "TrkPt12", "TrkPt16", "TrkPt20","TrkPt999" };
+
+// this should contained all the trkPt range otherwise it will mess up the selection
+float TrkPtBins[nTrkPtBins+1] = {0.7, 1, 2, 3, 4, 8, 12, 16, 999};
+//TString TrkPtBin_strs[nTrkPtBins+1] = {"TrkPt05", "TrkPt07", "TrkPt1", "TrkPt2", "TrkPt3", "TrkPt4", "TrkPt8", "TrkPt12", "TrkPt16", "TrkPt20","TrkPt999" };
+TString TrkPtBin_strs[nTrkPtBins+1] = {"TrkPt0.7", "TrkPt1", "TrkPt2", "TrkPt3", "TrkPt4", "TrkPt8", "TrkPt12", "TrkPt16", "TrkPt999" };
 
 //B-jet scheme
 //float CBins[nCBins+1] = {0, 60, 200};
@@ -130,7 +134,7 @@ const double subleadingjetcut = 50. ;
 const double dphicut = 5.*(TMath::Pi())/6. ; 
 const double trketamaxcut = 2.4;
 
-const bool doBjets = false;
+const bool doBjets = true;
 
 const bool doOnlySube0 = false;
 const bool doOnlySubeNot0 = false;
@@ -147,9 +151,12 @@ const bool doOutPlaneJets = false;
 
 //Auxillary functions defined below
 double findDR(double eta1, double phi1, double eta2, double phi2){
-    phi1 = TMath::ACos(TMath::Cos(phi1));
-    phi2 = TMath::ACos(TMath::Cos(phi2));
-    return sqrt(pow(phi1-phi2,2)+pow(eta1-eta2,2));
+   // phi1 = TMath::ACos(TMath::Cos(phi1));
+   // phi2 = TMath::ACos(TMath::Cos(phi2));
+   // return sqrt(pow(phi1-phi2,2)+pow(eta1-eta2,2));
+	double dphi = fabs(phi1-phi2);
+	if( dphi> TMath::Pi()) dphi = 2*TMath::Pi()-dphi;
+	return sqrt(pow(dphi,2)+pow(eta1-eta2,2));
 }
 
 void ReadFileList(std::vector<std::string> &my_file_names, TString file_of_names, bool debug=false);
@@ -191,11 +198,11 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
     TH1D *hAfter  = new TH1D("hAfter","",50,-2.5,2.5); hAfter->Sumw2();
 
     //*********************************************
-        bool doGenJets = false;
+        bool doGenJets = true;
         bool doGenTracks = false;
         bool useOfficialTrkCorr = false;
  
-        bool do_mixing = true;
+        bool do_mixing = 1;
         bool is_pp = false;
         bool is_data = false;
         //switch between Xiao's loose (b-jet) and tight (inclusive-jet) cuts
@@ -309,14 +316,16 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
         xiaoTrkCorr_fineBin *xtcFB;
         if(!useOfficialTrkCorr){
             if(doTightCuts){
-                if(is_data) xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_v14_data.root");
-                else  xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_v14_mc.root");
-                xtcFB = new xiaoTrkCorr_fineBin("trkCorrTable/eta_symmetry_cymbalCorr_FineBin.root");
+                if(is_data) xtc = new xiaoTrkCorr("corrTable/inputCorr_v14_data.root");
+                else  xtc = new xiaoTrkCorr("corrTable/inputCorr_v14_mc.root");
+                xtcFB = new xiaoTrkCorr_fineBin("corrTable/eta_symmetry_cymbalCorr_FineBin.root");
             }
             else{
-                if(is_data) xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_noVertex_data.root");
-               // else xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_noVertex.root");
-                else xtc = new xiaoTrkCorr("corrTable/patched_corrTable_cymbal_noDCAcuts.root");
+                xtc = new xiaoTrkCorr("corrTable/patched_corrTable_cymbal_noDCAcuts.root");
+                xtcFB = new xiaoTrkCorr_fineBin("corrTable/patched_corrTable_cymbal_noDCAcuts.root");
+                //if(is_data) xtc = new xiaoTrkCorr("corrTable/patched_corrTable_cymbal_noDCAcuts.root");
+                //// else xtc = new xiaoTrkCorr("trkCorrTable/inputCorr_noVertex.root");
+                //else xtc = new xiaoTrkCorr("corrTable/patched_corrTable_cymbal_noDCAcuts.root");
             }
         }
 
@@ -347,7 +356,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 
 	gRandom->SetSeed(0);
 	const int nCentMixBins=40;
-	const int nVzMixBins=60;
+	const int nVzMixBins=25;
 
 	TH1D * centbins = new TH1D("centbins","centbins. JUST A DUMMY REALLY", nCentMixBins, 0.0, 200.0);
 	TH1D * vzbins = new TH1D("vzbins","vzbins. JUST A DUMMY REALLY", nVzMixBins, -15., 15.);
@@ -371,16 +380,21 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                 TFile *me1;
                 int randFile = rand()%80+1;
                 //if(!is_data && !is_pp) me_tree->Add(Form("/mnt/hadoop/store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_DrumCentTable/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_HydDrumCentTable/170627_014009/0000/HydJet15_%d.root",randFile));
-                if(!is_data && !is_pp) me_tree->Add("/mnt/hadoop/store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root");
-                else if(!is_data) me_tree->Add("/mnt/hadoop/store/user/kjung/pp_Pythia6MC_5TeV_Skim_Aug2017/pp_Pythia6_5TeV_ppReco_skim/crab_pp_Pythia6MC_5TeV_Skim_Aug2017/170807_150502/0000/Pythia15_1.root");
+                if( doCrab ){
+			if(!is_data && !is_pp) me_tree->Add("/mnt/hadoop/store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root");
+			else if(!is_data) me_tree->Add("/mnt/hadoop/store/user/kjung/pp_Pythia6MC_5TeV_Skim_Aug2017/pp_Pythia6_5TeV_ppReco_skim/crab_pp_Pythia6MC_5TeV_Skim_Aug2017/170807_150502/0000/Pythia15_1.root");
                 //else if(!is_data) me_tree->Add(Form("/mnt/hadoop/store/user/kjung/pp_Pythia6MC_5TeV_Skim_March2017_bjet120_ppRecov2_noPVFilt/pp_Pythia6_5TeV_ppReco_bJet120_skim_noPVFilt/crab_pp_Pythia6MC_5TeV_Skim_March2017_bjet120_ppRecov2_noPVFilt/170328_154753/0000/Pythia15_%d.root",ifile+1));
                 //else if(!is_data) me_tree->Add(Form("/mnt/hadoop/store/user/kjung/pp_Pythia6_MC_5TeV_JetTrackSkim_March2017_bjet120_HIReco_noPVFilt/170328_135541/Pythia15_%d.root",ifile+1));
                 //else me1 = new TFile("/mnt/hadoop/store/user/kjung/PbPb_5TeV_skimJetTrack_Jan2017_looseMerge/PbPb_5TeV_JetTrackCorrCrabSkim_newJFFs/crab_PbPb_5TeV_skimJetTrack_Jan2017_looseMerge/170117_021458/0000/Data2015_311.root");
-                //me_tree = (TTree*)me1->Get("mixing_tree");
-                else if(is_pp) me_tree->Add("/mnt/hadoop/store/user/kjung/ppData_5TeV_inclJet_FinalJFFcorr_skims/Merged/Data_pp_Merged10Files.root");
-                else{
-                    me_tree->Add("/mnt/hadoop/store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root");
-                }
+		//me_tree = (TTree*)me1->Get("mixing_tree");
+			else if(is_pp) me_tree->Add("/mnt/hadoop/store/user/kjung/ppData_5TeV_inclJet_FinalJFFcorr_skims/Merged/Data_pp_Merged10Files.root");
+			else{
+				me_tree->Add("/mnt/hadoop/store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root");
+			}
+		}
+		else { 
+			me_tree->Add("/uscms_data/d3/xiaowang/sampleSet/MC_cymbal_tune_1.root");
+		}
                 //me_file_name = file_names.at(ifile);
                 //fin = new TFile(me_file_name.c_str());
             }
@@ -537,6 +551,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 	mixingWatch->Stop();
 	cout << "Mixing load time: "<< mixingWatch->RealTime() << endl;
 
+	Long64_t nmatchedJet = 0, nUnmatchedJet=0;
 	//-----------------------------------------------------------------------
 	//  Now start reading the signal files
 	//-----------------------------------------------------------------------
@@ -693,12 +708,19 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                         mixing_tree->SetBranchStatus("geneta", 1);
                         mixing_tree->SetBranchStatus("genpt", 1);
 
-                        mixing_tree->SetBranchAddress("geneta", &jteta);
-                        mixing_tree->SetBranchAddress("genphi", &jtphi);
-                        mixing_tree->SetBranchAddress("genpt", &jtpt);
-                        mixing_tree->SetBranchAddress("genpt",&corrpt);
-                    }
-                    else if(doGenJets){
+                        mixing_tree->SetBranchAddress("geneta", &geneta);
+                        mixing_tree->SetBranchAddress("genphi", &genphi);
+                        mixing_tree->SetBranchAddress("genpt",  &corrpt);
+
+                        mixing_tree->SetBranchStatus("calo_refparton_flavorForB",1);
+                        mixing_tree->SetBranchAddress("calo_refparton_flavorForB",&flavorForB);
+
+			mixing_tree->SetBranchStatus("calo_jteta",1);
+			mixing_tree->SetBranchStatus("calo_jtphi",1);
+			mixing_tree->SetBranchAddress("calo_jteta", &recoeta);
+			mixing_tree->SetBranchAddress("calo_jtphi", &recophi);
+                   }
+                   else if(doGenJets){
                         mixing_tree->SetBranchStatus("geneta", 1);
                         mixing_tree->SetBranchStatus("genphi", 1);
                         mixing_tree->SetBranchStatus("genpt", 1);
@@ -739,7 +761,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 		evtStopwatch.Start(1);
 		
 		int data_mc_type_code=globalCode;
-
+Long64_t nskipped=0;
+//n_evt = 200;
 		for(int evi = 0; evi < n_evt; evi++) {
 
                         fgStopwatch.Start(0);
@@ -799,7 +822,12 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 			if(is_pp) jet_cent=0;
                         jet_vzbin = vzbins->FindBin(vz)-1;
                         if(do_mixing){
-				if(mixing_lists.at(jet_vzbin).at(jet_cent).size()<2) continue;
+//cout<<"will skip"<<endl;
+				if(mixing_lists.at(jet_vzbin).at(jet_cent).size()<2){
+					nskipped ++ ;
+					continue;
+				}
+//cout<<"no"<<endl;
 			}
 
                         my_hists[data_mc_type_code]->NEvents_after_noise->Fill(hiBin/2.0);
@@ -863,8 +891,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                             if(doBjets && discr_csvV1->at(j4i) >= 0.9) foundBjet=true;
                                         }
                                         else{
-                                            if(doBjets && fabs(flavorForB->at(j4i))==5) foundBjet=true;
                                         }
+//if( foundBjet) cout<<"found jet at event = "<<evi<<" with cent: "<<hiBin<<endl;
                                         //cout << "discr " << discr_csvV1->at(j4i) << endl;
 					foundjet = kFALSE;
 					is_inclusive = kFALSE;
@@ -874,9 +902,9 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                             if(doOnlyUnmatchedJets && (fabs(flavor->at(j4i))==21 || (fabs(flavor->at(j4i))>=1 && fabs(flavor->at(j4i))<=6))) continue;
                                         }
                                         double matchedPt=0, matchedEta=0, matchedPhi=0;
+					double matcheddR=999;
+					int imatch=-1;
                                         if(doGenJets && (doOnlyQuarkJet || doOnlyGluonJet || doOnlyUnmatchedJets)){
-                                            double matcheddR=999;
-                                            int imatch=-1;
                                             for(unsigned int ireco=0; ireco<recoeta->size(); ireco++){
                                                double dr = findDR(recoeta->at(ireco), recophi->at(ireco), geneta->at(j4i), genphi->at(j4i));
                                                 if(dr<matcheddR){
@@ -895,6 +923,25 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                             if(fabs(matchedEta) > searchetacut) continue;
                                             is_inclusive=kTRUE; foundjet = kTRUE;
                                         }
+					else if ( doGenJets){
+//do jet matching to pick b-jet for gen
+                                            for(unsigned int ireco=0; ireco<recoeta->size(); ireco++){
+                                               double dr = findDR(recoeta->at(ireco), recophi->at(ireco), geneta->at(j4i), genphi->at(j4i));
+                                                if(dr<matcheddR){  matcheddR=dr;   imatch = ireco; nmatchedJet++;}
+						else nUnmatchedJet++;
+                                            }
+                                            if(imatch<0) continue;
+                                            matchedPt = corrpt->at(j4i);
+                                            matchedEta= geneta->at(j4i);
+                                            matchedPhi= genphi->at(j4i);
+                                            if(fabs(matchedEta) > searchetacut) continue;
+                                            if(fabs(matchedPt) < pTmincut) continue;
+                                            is_inclusive=kTRUE; foundjet = kTRUE;
+                                            if(doBjets && fabs(flavorForB->at(imatch))==5) foundBjet=true;
+					}
+					if( !foundBjet ) continue; 
+/*
+*/
                                         if((!doOnlyQuarkJet && !doOnlyGluonJet && !doOnlyUnmatchedJets) || !doGenJets){
                                             if(!doSpillOutJets && corrpt->at(j4i)<=leadingjetcut) continue ;
                                             if(doSpillOutJets){
@@ -913,24 +960,26 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                                 if(acos(cos(jtphi->at(j4i)-evtPlane)) < 0.785 || acos(cos(jtphi->at(j4i)-evtPlane)) > 2.355) continue;
                                             }
 
-                                            if( fabs(jteta->at(j4i)) > searchetacut ) continue;
                                             if(!doGenJets){
-                                                if(( corrpt->at(j4i) > pTmincut )&&(trackMax->at(j4i)/corrpt->at(j4i) > 0.01)){
-                                                    is_inclusive = kTRUE;  foundjet = kTRUE;
-                                                } 
+						    if( fabs(jteta->at(j4i)) > searchetacut ) continue;
+						    if(( corrpt->at(j4i) > pTmincut )&&(trackMax->at(j4i)/corrpt->at(j4i) > 0.01)){
+							    is_inclusive = kTRUE;  foundjet = kTRUE;
+						    } 
                                             }
-                                            if(doGenJets && corrpt->at(j4i) > pTmincut ){ is_inclusive=kTRUE; foundjet = kTRUE; }
+                                            if(doGenJets && corrpt->at(j4i) > pTmincut && fabs(geneta->at(j4i)) > searchetacut){ 
+						    is_inclusive=kTRUE; foundjet = kTRUE; }
                                             if(!foundjet) continue;
                                         }
 
 					//Determine gen-jet direction once, for use later in sube0 only residual jff-jec scans.
 
                                         double jet_pt, jet_eta, jet_phi;
-                                        if(doGenJets && (doOnlyQuarkJet || doOnlyGluonJet || doOnlyUnmatchedJets)){
+                                        //if(doGenJets && (doOnlyQuarkJet || doOnlyGluonJet || doOnlyUnmatchedJets)){}
+					if(doGenJets ){
                                             jet_pt = matchedPt;
                                             jet_eta = matchedEta;
                                             jet_phi = matchedPhi;
-                                        }
+					}
                                         else{
                                             jet_pt = corrpt->at(j4i);
                                             jet_eta = jteta->at(j4i);
@@ -944,14 +993,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                         }
 
 					if(is_inclusive == kTRUE){
-						/*
-                                            //if(!foundBjet){
-                                                my_hists[data_mc_type_code]->all_jets_corrpT[ibin][ibin2]->Fill(jet_pt, wvz*wcen); 
-                                                my_hists[data_mc_type_code]->all_jets_phi[ibin][ibin2]->Fill(jet_phi, wvz*wcen); 
-                                                my_hists[data_mc_type_code]->all_jets_eta[ibin][ibin2]->Fill(jet_eta, wvz*wcen);
-                                            //}
-					    */
 						if(foundBjet){
+//cout<<"filling.."<<endl;
 							my_hists[data_mc_type_code]->all_bjets_corrpT[ibin][ibin2]->Fill(jet_pt, wvz*wcen);
 							my_hists[data_mc_type_code]->all_bjets_phi[ibin][ibin2]->Fill(jet_phi, wvz*wcen);
 							my_hists[data_mc_type_code]->all_bjets_eta[ibin][ibin2]->Fill(jet_eta, wvz*wcen);
@@ -968,23 +1011,24 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                         //cout << " signal ntracks: " << trkPt->size() << endl;
 					int signtrk=0;
                                         for(int tracks =0; tracks < (int) trkPt->size(); tracks++){
-                                            if(!doGenTracks){
-                                                if(!passTrackCuts(is_pp, doTightCuts, trkPt->at(tracks), trkEta->at(tracks), highPurity->at(tracks), trkChi2->at(tracks), trkNdof->at(tracks), trkNlayer->at(tracks), trkNHit->at(tracks), pfHcal->at(tracks), pfEcal->at(tracks), trkDxy1->at(tracks)/trkDxyError1->at(tracks), trkDz1->at(tracks)/trkDzError1->at(tracks))) continue;
-                                            }
-                                            else{
-                        //                        if(trkPt->at(tracks)<1.0) hBefore->Fill(trkEta->at(tracks);
-                                                if(!passGenTrackCuts(trkPt->at(tracks), trkEta->at(tracks), chg->at(tracks), sube->at(tracks))) continue;
-                                             //   if(trkPt->at(tracks)<1.0) hAfter->Fill(trkEta->at(tracks));
-                                            }
-                                            signtrk++;
+						if(!doGenTracks){
+							if(!passTrackCuts(is_pp, doTightCuts, trkPt->at(tracks), trkEta->at(tracks), highPurity->at(tracks), trkChi2->at(tracks), trkNdof->at(tracks), trkNlayer->at(tracks), trkNHit->at(tracks), pfHcal->at(tracks), pfEcal->at(tracks), trkDxy1->at(tracks)/trkDxyError1->at(tracks), trkDz1->at(tracks)/trkDzError1->at(tracks))) continue;
+						}
+						else{
+							//                        if(trkPt->at(tracks)<1.0) hBefore->Fill(trkEta->at(tracks);
+							if(!passGenTrackCuts(trkPt->at(tracks), trkEta->at(tracks), chg->at(tracks), sube->at(tracks))) continue;
+							//   if(trkPt->at(tracks)<1.0) hAfter->Fill(trkEta->at(tracks));
+						}
+						signtrk++;
 						for(int trkpti = 0; trkpti < nTrkPtBins; trkpti++) {
-							if (trkPt->at(tracks) >=TrkPtBins[trkpti] && trkPt->at(tracks) < TrkPtBins[trkpti+1])  ibin3 = trkpti;
+							if ((trkPt->at(tracks) >=TrkPtBins[trkpti]) && (trkPt->at(tracks) < TrkPtBins[trkpti+1]))  {
+ibin3 = trkpti;}
 						} /// trkpti loop
 
-                                            if(foundBjet && trkPt->at(tracks)>4){
+                           //                 if(foundBjet && trkPt->at(tracks)>4){
                                                 //cout << "found 4 GeV track in signal event, jet: " << jet_pt << " " << jet_eta << " " << jet_phi << endl;
                                                 //cout << "found 4 GeV track in signal event: " << trkPt->at(tracks) << " " << trkEta->at(tracks) << " " << trkPhi->at(tracks) << endl;
-                                            }
+                            //                }
                                                 //  Prepare for and call efficiency calculation
 
 						eta= trkEta->at(tracks);
@@ -1000,6 +1044,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 						  }*/
 
 						double trkCorrection;
+//						cout << " trk pt: "<< pt << " eta: " << eta << " phi: "<< phi << " cent: "<< hiBin << " rmin: "<< rmin << endl;
                                                 if(!is_pp && useOfficialTrkCorr) trkCorrection = trkCorr->getTrkCorr(pt, eta, phi, hiBin, rmin);
                                                 else if(!is_pp){
                                                     if(!doCymbalTrkCorrs) trkCorrection = xtc->getTrkCorr(pt, eta, phi, hiBin);
@@ -1015,6 +1060,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 							multrec = 0.;
 						}  //just in case
 
+//cout<<" vz weight = "<<wvz<<endl;
                                                 if(doGenTracks) trkCorrection = 1.;
 
 						trkweight = pt_weight*trkCorrection; //(1-fake)*(1-secondary)/eff/(1+multrec);
@@ -1025,7 +1071,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 						//---------------------------
 						// Now we are ready to fill!
 						//---------------------------
-
+//						cout<<"vz and cent weight = "<<wvz*wcen<<endl;
                                                 if(trkPt->at(tracks)<1.0) hAfter->Fill(trkEta->at(tracks));
 
 						my_hists[data_mc_type_code]->TrkPt[ibin][ibin2][ibin3]->Fill(trkPt->at(tracks),wvz*wcen);
@@ -1055,6 +1101,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                                         //}
 							*/
 							if(foundBjet){
+								//cout<<" filling cent bin = "<<ibin2<<" trkptbin = "<<ibin3<<endl;
+								//cout<<"weight = "<<trkweight<<endl;
 								my_hists[data_mc_type_code]->hbJetTrackSignalBackground[ibin][ibin2][ibin3]->Fill(deta,dphi, trkweight*wvz*wcen);
 								my_hists[data_mc_type_code]->hbJetTrackSignalBackground_pTweighted[ibin][ibin2][ibin3]->Fill(deta,dphi, pt*trkweight*wvz*wcen);
                                                                 my_hists[data_mc_type_code]->hbJetTrackSignalBackground_notrkcorr[ibin][ibin2][ibin3]->Fill(deta,dphi, wvz*wcen);
@@ -1070,7 +1118,6 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 					//----------------------------------------------------
 					//      EVENT MIXING STARTS HERE!  (For DATA ONLY)
 					//-----------------------------------------------------
-
 					if(do_mixing){
 
                                                 mixStopwatch.Start(0);
@@ -1180,6 +1227,7 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 								
 								
                                                                 trkweight = pt_weight*trkCorrection; //(1-fake)*(1-secondary)/eff/(1+multrec);
+								//cout<<"trkweight = "<<trkweight<<endl;
                                                 
 								trkweight_lead = pt_weight_lead*trkCorrection; //(1-fake)*(1-secondary)/eff/(1+multrec);
 
@@ -1214,6 +1262,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                                                                         //}
 									*/
 									if(foundBjet){
+							//	cout<<" filling mixing cent bin = "<<ibin2<<" trkptbin = "<<ibin3<<endl;
+							//	cout<<"weight = "<<trkweight<<endl;
 										my_hists[data_mc_type_code]->hbJetTrackME[ibin][ibin2][ibin3]->Fill(deta,dphi, trkweight*wvz*wcen);
 										my_hists[data_mc_type_code]->hbJetTrackME_pTweighted[ibin][ibin2][ibin3]->Fill(deta,dphi, trkweight*wvz*wcen*pt);
 										my_hists[data_mc_type_code]->hbJetTrackME_notrkcorr[ibin][ibin2][ibin3]->Fill(deta,dphi, wvz*wcen);
@@ -1251,6 +1301,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
             } ///we do EVERYTHING one event at a time.
 
             evtStopwatch.Stop();
+	    float skipratio = float(nskipped)/float(n_evt);
+	    cout<<nskipped<<"("<<skipratio<<") events has been skipped"<<endl;
             cout << "Avg event time: " << evtStopwatch.RealTime()/(double)n_evt << " sec/evt" << endl;
             cout << "Avg fg time: "<< fgStopwatch.RealTime()/(double)n_evt << " sec/evt" << endl;
             cout << "Avg mix time: "<< mixStopwatch.RealTime()/(double)n_evt << " sec/evt" << endl;
@@ -1261,8 +1313,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
             my_file->Close();
             
       }//FILE LOOP  (sort of a dummy, since we run on one file at a time).  
+	    cout<<"There were a total of "<<nUnmatchedJet<<" ("<<float(nUnmatchedJet)/(nUnmatchedJet+nmatchedJet)*100<<"%) jets we could not match over all selections."<<endl;
       
-      cout<<"There were a total of "<<unmatched_counter<<" jets we could not match over all selections."<<endl;
       
       cout<<"Ready to write"<<endl;
       

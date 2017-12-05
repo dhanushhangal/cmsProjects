@@ -144,6 +144,8 @@ hist_class::hist_class(TString the_desc, bool is_it_data) {
 */
 
     for (int ibin3=0;ibin3<nTrkPtBins;ibin3++){
+
+//cout<<"!==============  "<<ibin<<", "<<ibin2<<", "<<ibin3<<endl;
 /*
      hJetTrackSignalBackground[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hJetTrackSignalBackground"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hJetTrackSignalBackground[ibin][ibin2][ibin3]->Sumw2();
 
@@ -158,9 +160,9 @@ hist_class::hist_class(TString the_desc, bool is_it_data) {
      */
 
 
-     hbJetTrackSignalBackground_pTweighted[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackSignalBackground"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hbJetTrackSignalBackground_pTweighted[ibin][ibin2][ibin3]->Sumw2();
+     hbJetTrackSignalBackground_pTweighted[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackSignalBackground_pTweighted"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hbJetTrackSignalBackground_pTweighted[ibin][ibin2][ibin3]->Sumw2();
 
-     hbJetTrackSignalBackground[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackSignalBackground"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hbJetTrackSignalBackground[ibin][ibin2][ibin3]->Sumw2();
+     hbJetTrackSignalBackground[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackSignalBackground_"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hbJetTrackSignalBackground[ibin][ibin2][ibin3]->Sumw2();
 
      hbJetTrackSignalBackground_notrkcorr[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackSignalBackground_notrkcorr"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-0.5*TMath::Pi(),1.5*TMath::Pi());     hbJetTrackSignalBackground_notrkcorr[ibin][ibin2][ibin3]->Sumw2();
 
@@ -198,7 +200,7 @@ hist_class::hist_class(TString the_desc, bool is_it_data) {
 
      //**//**//**//
 
-     hbJetTrackME_pTweighted[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackME"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hbJetTrackME_pTweighted[ibin][ibin2][ibin3]->Sumw2();
+     hbJetTrackME_pTweighted[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackME_pTweighted_"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hbJetTrackME_pTweighted[ibin][ibin2][ibin3]->Sumw2();
 
      hbJetTrackME[ibin][ibin2][ibin3] = new TH2D((TString) (desc + "_hbJetTrackME"+ CBin_strs[ibin] + "_" + CBin_strs[ibin+1] + "_" + PtBin_strs[ibin2] + "_" + PtBin_strs[ibin2+1]+ "_" + TrkPtBin_strs[ibin3] + "_" + TrkPtBin_strs[ibin3+1]), "", nHistoBinsX,-5,5,nHistoBinsY,-TMath::Pi()/2,3*TMath::Pi()/2);     hbJetTrackME[ibin][ibin2][ibin3]->Sumw2();
 
@@ -413,6 +415,8 @@ void hist_class::Write(int mc_type_i)
       all_bjets_eta[ibin][ibin2]->Write();
 
       for (int ibin3=0;ibin3<nTrkPtBins;ibin3++){
+
+//cout<<"writing "<<ibin3<<endl;
 
        hbJetTrackSignalBackground[ibin][ibin2][ibin3]->Write();
        hbJetTrackSignalBackground_pTweighted[ibin][ibin2][ibin3]->Write();
