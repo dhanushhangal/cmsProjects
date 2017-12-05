@@ -98,19 +98,19 @@ void plot_py_dr(){
 		diff[i]->hst_up->GetXaxis()->SetTitle("#Deltar");
 		if( i<3 )  {
 			diff[i]->hst_up->GetXaxis()->SetTitleOffset(0.75);
-			diff[i]->hst_up->GetXaxis()->SetTitleSize(0.09);
+			diff[i]->hst_up->GetXaxis()->SetTitleSize(0.11);
 			diff[i]->hst_up->GetXaxis()->SetNdivisions(505);
-			diff[i]->hst_up->GetXaxis()->SetLabelSize(0.08);
+			diff[i]->hst_up->GetXaxis()->SetLabelSize(0.09);
 			diff[i]->hst_up->GetXaxis()->SetLabelOffset(0.001);
 		}
 		diff[i]->hst_up->Draw();
 		diff[i]->hst_down->Draw("same");
 		if(i==3 ){
 			diff[i]->hst_up->GetXaxis()->SetTitleOffset(0.94);
-			diff[i]->hst_up->GetXaxis()->SetTitleSize(0.074);
+			diff[i]->hst_up->GetXaxis()->SetTitleSize(0.085);
 			diff[i]->hst_up->GetXaxis()->SetNdivisions(505);
-			diff[i]->hst_up->GetXaxis()->SetLabelOffset(0.013);
-			diff[i]->hst_up->GetXaxis()->SetLabelSize(0.063);
+			diff[i]->hst_up->GetXaxis()->SetLabelOffset(0.016);
+			diff[i]->hst_up->GetXaxis()->SetLabelSize(0.07);
 			diff[i]->hst_up->GetYaxis()->SetNdivisions(505);
 			diff[i]->hst_up->GetYaxis()->SetLabelSize(0.07);
 			diff[i]->hst_up->GetYaxis()->SetTitleOffset(0.9);
@@ -184,14 +184,15 @@ void plot_py_dr(){
 	box->SetFillColor(kWhite);
 	c->cd(0);
 	box->DrawBox(0.285,.047, 0.3, 0.072);
-	tl->SetTextSize(.025);
+	tl->SetTextSize(.0268);
 	tl->SetTextFont(42);
-	tl->DrawLatex(0.29, 0.055, "0");
 	box->DrawBox(0.518,.047, 0.533, 0.072);
 	box->DrawBox(0.75,.047, 0.765, 0.072);
 
-	tl->DrawLatex(0.523, 0.055, "0");
-	tl->DrawLatex(0.755, 0.055, "0");
+	tl->DrawLatex(0.29,  0.0514, "0");
+	tl->DrawLatex(0.523, 0.0514, "0");
+	tl->DrawLatex(0.755, 0.0514, "0");
+	tl->DrawLatex(0.985, 0.0514, "1");
 
 	c->SaveAs("py_dr_new.eps");
 	c->SaveAs("py_dr_new.pdf");

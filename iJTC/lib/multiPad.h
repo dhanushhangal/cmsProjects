@@ -7,6 +7,9 @@
 #include "TCanvas.h"
 #endif
 
+//#ifndef xTHD12_H
+//#include "xTHD12.h"
+//#endif
 
 class baseCanvas: public TCanvas{
 
@@ -24,8 +27,7 @@ class baseCanvas: public TCanvas{
 		cname = hname;
 		tx = new TLatex();
 	}
-		void histoConfig(TH1* h);
-
+		void histoConfig(TH1* h); 
 	public :
 		const int nrow, ncol;
 		TPad *pad;
@@ -48,30 +50,42 @@ class multiPad: public baseCanvas{
 	{
 		tl = new TLine();
 		doFrame=false;
-		drawLine=false;
 	}
-		void addHist(TH1* h, int row, int col);
+		void addHist(TH1* h, int row, int col, TString opt= "");
 		void draw();
 		void useFrame();
-		void baseLine(float, float, float, float);
+		void addLine(float x1, float y1, float x2, float y2);
 
 	public :
 		std::multimap<int ,TH1*> buff;
+		std::map<TH1*, TString> buf_opt;
 		TLine *tl;
 		TH1* hframe;
 		bool doFrame;
-		bool drawLine;
 		float lx1, lx2, ly1, ly2;
+		bool doline=0;
 };
 
-void multiPad::addHist(TH1* h, int row, int col){
+void multiPad::addHist(TH1* h, int row, int col, TString opt){
 	if(col!=1) h->GetYaxis()->SetLabelSize(0);
+	else h->GetYaxis()->SetLabelSize(0.1);
 	if(row!=nrow) h->GetXaxis()->SetLabelSize(0.);
-	buff.insert(std::pair<int, TH1*> ((row-1)*ncol+col, h)); }
+	else  { 
+			h->GetXaxis()->SetLabelSize(0.08); 
+			h->GetXaxis()->SetTitleSize(0.1);
+			h->GetXaxis()->SetTitleOffset(0.8);
+	}
+	buff.insert(std::pair<int, TH1*> ((row-1)*ncol+col, h)); 
+	buf_opt.insert(std::pair<TH1*, TString > (h, opt));
+}
+
+void multiPad::addLine(float x1, float y1, float x2, float y2){
+		doline = 1;
+		lx1=x1; lx2=x2; ly1=y1; ly2=y2;
+}
 
 void multiPad::draw(){
 //	this->Draw();
-	if(drawLine)tl->SetLineStyle(2);
 	std::pair<multimap<int,TH1*>::iterator, multimap<int, TH1*>::iterator> ii;
 	multimap<int, TH1*>::iterator it;
 	for(int n=1; n<nrow*ncol+1; ++n){
@@ -79,10 +93,12 @@ void multiPad::draw(){
 		ii = buff.equal_range(n);
 		for(it = ii.first; it != ii.second; ++it){
 			cout<<it->second->GetName()<<endl;
-			if(it == ii.first) (it->second)->Draw();
-			else (it->second)->Draw("same");
+//			gPad->SetLogy();
+			TString opt = buf_opt.at(it->second);
+			if(it != ii.first) opt = "same "+opt;
+			(it->second)->Draw(opt);
 		}
-		if(drawLine) tl->DrawLine(lx1, ly1, lx2, ly2);
+		if(doline) tl->DrawLine(lx1, ly1, lx2, ly2);
 	}
 	this->cd(1);
 	this->Update();
@@ -90,9 +106,6 @@ void multiPad::draw(){
 
 void multiPad::useFrame(){
 }
-void multiPad::baseLine(float x1, float y1, float x2, float y2){
-	lx1=x1;	lx2=x2;	ly1=y1; ly2=y2;
-	drawLine=true;
-}
+
 
 #endif

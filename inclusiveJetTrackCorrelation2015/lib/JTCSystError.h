@@ -172,7 +172,9 @@ void JTCSystError::getAllError(TH1D* h, TH1D* hjff, TH1D* hspill, bool isdr){
 										pow(bkg->GetBinLowEdge(k),2))/2/bkg->GetBinWidth(k);
 						bkg->SetBinContent(k, bkg_err*ring);
 				}
-				else bkg->SetBinContent(k, bkg_err);
+				else {
+						bkg->SetBinContent(k, bkg_err);
+				}
 				float a = spill->GetBinContent(k);
 				float b = jff->GetBinContent(k);
 				float c = sig->GetBinContent(k);
@@ -180,6 +182,9 @@ void JTCSystError::getAllError(TH1D* h, TH1D* hjff, TH1D* hspill, bool isdr){
 				error->SetBinContent(k,pow(a*a+b*b+c*c+d*d,0.5));
 				error->SetBinError(k,0);
 		}
+		cout<<bkg->GetName()<<endl;
+		//cout<<bkg_err<<endl;
+//		bkg->Print("ALL");
 		if(!isdr)symmetrization(error);
 }
 
@@ -196,7 +201,7 @@ class JTCSystCanvas : public baseCanvas {
 				};
 				void addError(JTCSystError *err, int row, int col);
 				void drawFit();
-				void drawSummary(float x, float y);
+				void drawSummary(float x, float y, bool symm=1);
 				void adjustPlotRange(TH1D* h, double center);
 				JTCSystError * getErr(int i, int j){
 						return list.at(index(i,j)-1);
@@ -213,35 +218,53 @@ void JTCSystCanvas::addError(JTCSystError *err, int row, int col){
 		return;	
 }
 
-void JTCSystCanvas::drawSummary(float x, float y){
+void JTCSystCanvas::drawSummary(float x, float y, bool symm){
 		cout<<list.size()<<endl;
 		for(int i=1; i<nrow+1; ++i){
-				float maximum= getErr(i,ncol)->error->GetMaximum()*1.2;
+				float maximum;
+				if(!symm) maximum= getErr(i,ncol)->error->GetMaximum()*1.4;
+				else maximum= getErr(i,ncol)->error->GetBinContent(getErr(i,ncol)->error->FindBin(0))*2.4;
 				for(int j=1; j<ncol+1; ++j){
 						cd(index(i,j));
-						cout<<i<<", "<<j<<", "<<index(i,j)<<endl;
-						TH1D* h= getErr(i,j)->error;
+						//cout<<i<<", "<<j<<", "<<index(i,j)<<endl;
+						TH1D* h= getErr(i,j)->bkg;
 						if(j!=1) h->GetYaxis()->SetLabelSize(0);
 						else h->GetYaxis()->SetLabelSize(0.1);
 						if(i!=nrow) h->GetXaxis()->SetLabelSize(0.);
 						else  h->GetXaxis()->SetLabelSize(0.08);
 						h->SetAxisRange(x, y , "X");
 						h->SetAxisRange(0, maximum , "Y");
+						getErr(i,j)->bkg->SetAxisRange(x, y , "X");
+						getErr(i,j)->sig->SetAxisRange(x, y , "X");
+						getErr(i,j)->error->SetAxisRange(x, y , "X");
+					//	getErr(i,j)->bkg->SetAxisRange(0, maximum , "Y");
 
 //						getErr(i,j)->error->SetLineColor(kAzure-9);
-						getErr(i,j)->error->SetLineColor(kBlack);
-						getErr(i,j)->bkg->SetLineColor(kGreen+2);
-						getErr(i,j)->sig->SetLineColor(kViolet);
-						getErr(i,j)->jff->SetLineColor(kRed+1);
-						getErr(i,j)->spill->SetLineColor(kBlue);
+						getErr(i,j)->error->SetLineColor(kBlack);   getErr(i,j)->error ->SetMarkerColor(kBlack);
+						getErr(i,j)->bkg->SetLineColor(kOrange+1);  getErr(i,j)->bkg   ->SetMarkerColor(kOrange+1);
+						getErr(i,j)->sig->SetLineColor(kAzure+8);   getErr(i,j)->sig   ->SetMarkerColor(kAzure+8);
+						getErr(i,j)->jff->SetLineColor(kMagenta);   getErr(i,j)->jff   ->SetMarkerColor(kMagenta);
+						getErr(i,j)->spill->SetLineColor(kGreen+2); getErr(i,j)->spill ->SetMarkerColor(kGreen+2);
 						getErr(i,j)->error->SetLineWidth(2);
-						getErr(i,j)->bkg->SetLineWidth(1);
-//						getErr(i,j)->bkg->SetLineStyle(1);
-						getErr(i,j)->error->Draw();
-						getErr(i,j)->jff->Draw("same");
-						getErr(i,j)->spill->Draw("same");
-						getErr(i,j)->bkg->Draw("same");
-						getErr(i,j)->sig->Draw("same");
+						getErr(i,j)->sig  ->SetLineWidth(1);
+						getErr(i,j)->jff  ->SetLineWidth(1);
+						getErr(i,j)->spill->SetLineWidth(1);
+						getErr(i,j)->bkg  ->SetLineWidth(1);
+//						getErr(i,j)->bkg  ->SetLineStyle(4);
+
+						getErr(i,j)->error->SetMarkerSize(0);
+						getErr(i,j)->sig  ->SetMarkerSize(0); 
+						getErr(i,j)->jff  ->SetMarkerSize(0); 
+						getErr(i,j)->spill->SetMarkerSize(0); 
+						getErr(i,j)->bkg  ->SetMarkerSize(0); 
+
+						getErr(i,j)->bkg->Draw("same hist");
+						getErr(i,j)->jff->Draw("same hist");
+						getErr(i,j)->spill->Draw("same hist");
+						getErr(i,j)->sig->Draw("same hist");
+						getErr(i,j)->error->Draw("same");
+					//	cout<<"Name "<<getErr(i,j)->sig->GetName()<<endl;
+					//	getErr(i,j)->sig->Print("all");
 				}
 		}
 		/*

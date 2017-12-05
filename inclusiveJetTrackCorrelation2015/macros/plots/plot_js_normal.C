@@ -52,6 +52,9 @@ void plot_js_normal(){
 	c->SetMargin(0.06, 0.01, 0.08, 0.02);
 	c->divide(3,4);
 
+	cout<<ratio_auxi[0]->GetName()<<endl;
+	cout<<"err = "<<ratio_auxi[0]->GetBinError(ratio_auxi[0]->FindBin(0.95))<<endl;;
+	
 	for(int i=0; i<4; ++i){
 		c->CD(8-i);
 		gPad->SetLogy();
@@ -79,7 +82,7 @@ void plot_js_normal(){
 		//ratio[i]->GetYaxis()->SetNdivisions(505);
 		ratio[i]->GetXaxis()->SetTitleOffset(1.1);
 		ratio[i]->GetXaxis()->SetTitle("#Deltar");
-		ratio[i]->SetAxisRange(0.5, 3.2, "Y");
+		ratio[i]->SetAxisRange(0., 3.2, "Y");
 		ratio[i]->SetAxisRange(0, .99, "X");
 		if( i<3 )  {
 			ratio[i]->GetXaxis()->SetTitleOffset(0.8);

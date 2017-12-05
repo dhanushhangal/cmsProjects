@@ -16,7 +16,7 @@
 #include "../Austin_TrkCorr/getTrkCorr.h"
 using namespace jetTrack;
 
-TrkCorr * Austin_corr = new TrkCorr("/Users/tabris/cmsProjects/iJTC/Austin_TrkCorr/");
+//TrkCorr * Austin_corr = new TrkCorr("../Austin_TrkCorr/");
 
 class trackingCorr  {
 	public: 
@@ -177,7 +177,6 @@ void trackingCorr::getCorr(TString file){
 		}
 	}
 */
-	/*
 	TFile* wf2 = TFile::Open("eta_symmetry_"+file, "recreate");
 	for(int i=0; i<ntrkpt_out; ++i){
 		for(int j=0; j<ncent_out; ++j){
@@ -188,7 +187,7 @@ void trackingCorr::getCorr(TString file){
 			corr[i+j*ntrkpt_out]->Write();
 		}
 	}
-	*/
+	/*
 	TFile* wf3 = TFile::Open("patched_"+file, "recreate");
 
 	for(int i=0; i<ntrkpt_out; ++i){
@@ -200,6 +199,7 @@ void trackingCorr::getCorr(TString file){
 			corr[i+j*ntrkpt_out]->Write();
 		}
 	}
+	*/
 
 }
 
