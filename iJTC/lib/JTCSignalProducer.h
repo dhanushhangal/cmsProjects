@@ -16,7 +16,9 @@ class JTCSignalProducer :public signalFactoryBase {
 				TH2D* getSignal(TString name);
 				void read(TFile *f, TString name);
 				TH1* projectionX(TH2D* h, float x, float y);
-				TH1* signal_X(bool doRebin=1, float x=-1, float y=1);
+				TH1* projX(bool doRebin, TH2D* h, float x, float y); // for general projection 
+				TH1* signal_X(bool doRebin=1){ return projX( doRebin, sig, -1, 1);}
+				TH1* raw_X(bool doRebin=1){ return projX( doRebin, raw_sig, -1, 1);}
 				void WriteTH2();
 		public :
 				TH2D* raw_sig =NULL;
@@ -74,8 +76,8 @@ TH1* JTCSignalProducer::projectionX(TH2D* h, float x, float y){
 		return h->ProjectionX(name, xbin, ybin );
 }
 
-TH1* JTCSignalProducer::signal_X(bool doRebin, float x, float y){
-		TH1* h=projectionX(sig, x, y);
+TH1* JTCSignalProducer::projX(bool doRebin, TH2D*h2, float x, float y){
+		TH1* h=projectionX(h2, x, y);
 		h->Scale(sig->GetYaxis()->GetBinWidth(1));  // as signal is invariant in default
 		if(doRebin){
 				TString name = h->GetName();
@@ -86,4 +88,5 @@ TH1* JTCSignalProducer::signal_X(bool doRebin, float x, float y){
 		}
 		return h;
 }
+
 #endif 

@@ -5,16 +5,15 @@
 using namespace signal2D;
 
 void checkTracking (){
-
 		TString trk_tag[] = {"1 < p_{T}^{track} < 2 GeV",
 				"2 < p_{T}^{track} < 3 GeV", "3 < p_{T}^{track} < 4 GeV",
 				"4 < p_{T}^{track} < 8 GeV", "8 < p_{T}^{track} < 12 GeV", 
-				"12 < p_{T}^{track} < 16 GeV", "p_{T}^{track} > 20 Gev"};
+				"12 < p_{T}^{track} < 16 GeV", "p_{T}^{track} > 16 Gev"};
 		TString cent_tag[]={"Cent. 0-30%", "Cent. 30-100%"};
 
 		JTCSignalProducer *sp1 [7][2];
 		JTCSignalProducer *sp2 [7][2];
-		multiPad *cp = new multiPad("cp", "", 7, 2);
+		multiPad *cp = new multiPad("cp", "", 7,2 );
 		for(int i=0; i<7; ++i){
 				for(int j=0; j<2; ++j){
 						sp1[i][j]= new JTCSignalProducer();
@@ -35,12 +34,10 @@ void checkTracking (){
 		auto tx = new TLatex();  tx->SetTextSize(.08);
 		for(int i=0; i<7; ++i){
 				for(int j=0; j<2; ++j){
-						cp->cd(i*2-j+2);
+						cp->cd(i*2+2-j);
 						if( j==1) tx->DrawLatexNDC(0.2,0.87, trk_tag[i]);
 						if( i==0) tx->DrawLatexNDC(0.6,0.87, cent_tag[j]);
 				}
 		}
 		cp->SaveAs("RecGen_RecRec_overlay.pdf");
-						
-		
 }

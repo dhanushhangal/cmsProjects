@@ -294,7 +294,7 @@ TH1* signalFactoryBase::invariantRebin(TH1* h, TString name , int n, const Doubl
 		}
 		TH1* hh = h->Rebin(n, name, bins);
 		for(int i=1; i<hh->GetNbinsX()+1; ++i){
-				Double_t wd = h->GetBinWidth(i);
+				Double_t wd = hh->GetBinWidth(i);
 				hh->SetBinContent(i, hh->GetBinContent(i)/wd);
 				hh->SetBinError  (i, hh->GetBinError(i)/wd);
 		}
