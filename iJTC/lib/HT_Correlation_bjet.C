@@ -132,7 +132,7 @@ const double trketamaxcut = 2.4;
 
 const bool doBjets = false;
 
-const bool doOnlySube0 = false;
+const bool doOnlySube0 = true;
 const bool doOnlySubeNot0 = false;
 const bool doOnlyGluonJet = false;
 const bool doOnlyQuarkJet = false;
@@ -191,8 +191,8 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
     TH1D *hAfter  = new TH1D("hAfter","",50,-2.5,2.5); hAfter->Sumw2();
 
     //*********************************************
-        bool doGenJets = false;
-        bool doGenTracks = false;
+        bool doGenJets = true;
+        bool doGenTracks = true;
         bool useOfficialTrkCorr = false;
  
         bool do_mixing = true;

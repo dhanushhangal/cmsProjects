@@ -199,10 +199,10 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
 
     //*********************************************
         bool doGenJets = true;
-        bool doGenTracks = false;
+        bool doGenTracks = true;
         bool useOfficialTrkCorr = false;
  
-        bool do_mixing = 1;
+        bool do_mixing = 0;
         bool is_pp = false;
         bool is_data = false;
         //switch between Xiao's loose (b-jet) and tight (inclusive-jet) cuts
@@ -707,18 +707,22 @@ void HT_Correlation_bjet(bool doCrab = 0, int jobID=0, int globalCode=0, int sta
                         mixing_tree->SetBranchStatus("genphi", 1);
                         mixing_tree->SetBranchStatus("geneta", 1);
                         mixing_tree->SetBranchStatus("genpt", 1);
+                        mixing_tree->SetBranchStatus("calo_refpt", 1);
 
                         mixing_tree->SetBranchAddress("geneta", &geneta);
                         mixing_tree->SetBranchAddress("genphi", &genphi);
-                        mixing_tree->SetBranchAddress("genpt",  &corrpt);
+                        mixing_tree->SetBranchAddress("genpt", &genpt);
+                        mixing_tree->SetBranchAddress("calo_refpt",  &corrpt);
 
                         mixing_tree->SetBranchStatus("calo_refparton_flavorForB",1);
                         mixing_tree->SetBranchAddress("calo_refparton_flavorForB",&flavorForB);
 
 			mixing_tree->SetBranchStatus("calo_jteta",1);
 			mixing_tree->SetBranchStatus("calo_jtphi",1);
+			mixing_tree->SetBranchStatus("calo_jtpt",1);
 			mixing_tree->SetBranchAddress("calo_jteta", &recoeta);
 			mixing_tree->SetBranchAddress("calo_jtphi", &recophi);
+			mixing_tree->SetBranchAddress("calo_jtpt", &recopt);
                    }
                    else if(doGenJets){
                         mixing_tree->SetBranchStatus("geneta", 1);
@@ -883,7 +887,8 @@ Long64_t nskipped=0;
 				   }
 				 */
                                 int nTotJets = corrpt->size();
-                                if((doOnlyQuarkJet || doOnlyGluonJet || doOnlyUnmatchedJets) && doGenJets) nTotJets = genpt->size();
+             //                   if((doOnlyQuarkJet || doOnlyGluonJet || doOnlyUnmatchedJets) && doGenJets) nTotJets = genpt->size();
+if(nTotJets!= 
                                 for(int j4i = 0; j4i < nTotJets; j4i++) {
 
 					bool foundBjet = false;
@@ -925,19 +930,30 @@ Long64_t nskipped=0;
                                         }
 					else if ( doGenJets){
 //do jet matching to pick b-jet for gen
-                                            for(unsigned int ireco=0; ireco<recoeta->size(); ireco++){
-                                               double dr = findDR(recoeta->at(ireco), recophi->at(ireco), geneta->at(j4i), genphi->at(j4i));
-                                                if(dr<matcheddR){  matcheddR=dr;   imatch = ireco; nmatchedJet++;}
-						else nUnmatchedJet++;
-                                            }
-                                            if(imatch<0) continue;
-                                            matchedPt = corrpt->at(j4i);
-                                            matchedEta= geneta->at(j4i);
-                                            matchedPhi= genphi->at(j4i);
+                                           // for(unsigned int ireco=0; ireco<recoeta->size(); ireco++){
+                                           //    double dr = findDR(recoeta->at(ireco), recophi->at(ireco), geneta->at(j4i), genphi->at(j4i));
+                                           //     if(dr<matcheddR){  matcheddR=dr;   imatch = ireco; nmatchedJet++;}
+					   //     else nUnmatchedJet++;
+                                           // }
+                                           // if(imatch<0) continue;
+                                           if(corrpt->at(j4i)<60) continue;
+                                            for(unsigned int igen=0; igen<genpt->size(); igen++){
+						if( fabs(genpt->at(igen)-corrpt->at(j4i))< 0.1) {
+							imatch = igen; break;}
+					    }
+                                            if(imatch<0) {
+						    nUnmatchedJet++;
+					//	    cout<<"didn't find the matched jet: "<<corrpt->at(j4i)<<endl;
+						    continue;
+					    }
+					    nmatchedJet++;
+                                            if(doBjets && fabs(flavorForB->at(j4i))==5) foundBjet=true;
+                                            matchedPt = genpt ->at(imatch);
+                                            matchedEta= geneta->at(imatch);
+                                            matchedPhi= genphi->at(imatch);
                                             if(fabs(matchedEta) > searchetacut) continue;
                                             if(fabs(matchedPt) < pTmincut) continue;
                                             is_inclusive=kTRUE; foundjet = kTRUE;
-                                            if(doBjets && fabs(flavorForB->at(imatch))==5) foundBjet=true;
 					}
 					if( !foundBjet ) continue; 
 /*
