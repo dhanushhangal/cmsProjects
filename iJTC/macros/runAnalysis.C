@@ -12,8 +12,14 @@ void runAnalysis(){
 
 		//getting the 4-commuted tabels for jet and track reco validation check 
 		signal2D::loadFile();
+		/*
 		signal2D::drawTable("gen_gen", "gen_rec", signal2D::gengen_pb_f, signal2D::genrec_pb_f);
 		signal2D::drawTable("rec_gen", "rec_rec", signal2D::recgen_pb_f, signal2D::recrec_pb_f);
 		signal2D::drawTable("gen_gen", "rec_gen", signal2D::gengen_pb_f, signal2D::recgen_pb_f);
 		signal2D::drawTable("gen_rec", "rec_rec", signal2D::genrec_pb_f, signal2D::recrec_pb_f);
+		*/
+		signal2D::drawTableWithRatio("gen_gen", "gen_rec", signal2D::gengen_pb_f, signal2D::genrec_pb_f);
+		signal2D::drawTableWithRatio("rec_gen", "rec_rec", signal2D::recgen_pb_f, signal2D::recrec_pb_f);
+		signal2D::drawTableWithRatio("gen_gen", "rec_gen", signal2D::gengen_pb_f, signal2D::recgen_pb_f);
+		signal2D::drawTableWithRatio("gen_rec", "rec_rec", signal2D::genrec_pb_f, signal2D::recrec_pb_f);
 }

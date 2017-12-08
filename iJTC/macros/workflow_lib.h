@@ -6,6 +6,9 @@
 #ifndef multiPad_H
 #include "../lib/multiPad.h"
 #endif
+#ifndef xPlotStyle_H
+#include "../lib/xPlotStyle.h"
+#endif
 
 //const int nPt = 8; const int nCent =2 ;
 TString dataDumpPath = "/Users/tabris/cmsProjects/iJTC/dataSet/correlation/";
@@ -44,6 +47,41 @@ namespace input_raw2D{
 }
 
 namespace signal2D{
+		void drawTableWithRatio(TString name1, TString name2, TFile *f1, TFile *f2){
+				JTCSignalProducer *sp1 [nPt][nCent];
+				JTCSignalProducer *sp2 [nPt][nCent];
+				auto *cp = new doublePanelFig("cp_"+name1+"_"+name2, "", nPt,nCent );
+				TH1D* hr[nPt][nCent];
+				auto tx = new TLatex();  tx->SetTextSize(.08);
+				auto tl = new TLine();   tl->SetLineStyle(2); tl->SetLineWidth(2);
+				TString tmp;
+				for(int i=0; i<nPt; ++i){
+						for(int j=0; j<nCent; ++j){
+								sp1[i][j]= new JTCSignalProducer();
+								sp1[i][j]->read(f1, name1+Form("_%d_%d", i,j));
+								sp2[i][j]= new JTCSignalProducer();
+								sp2[i][j]->read(f2, name2+Form("_%d_%d", i,j));
+								TH1* h = sp1[i][j]->signal_X(); h->GetXaxis()->SetTitle("#Delta#eta"); h->SetTitle("");
+								if(i==0 )h->SetAxisRange(h->GetMinimum()-h->GetMaximum()*0.1, h->GetMaximum()*1.5, "Y");
+								else h->SetAxisRange(h->GetMinimum()-h->GetMaximum()*0.1, h->GetMaximum()*1.4, "Y");
+								h->SetMarkerColor(kBlue+2);
+								h->SetLineWidth(1);
+								hr[i][j]=(TH1D*)h->Clone(Form("hr_%d_%d",i,j));
+								cp->addHist(h, i+1, 2-j);
+								h = sp2[i][j]->signal_X(); h->SetLineColor(kRed);  h->SetMarkerColor(kRed);
+								cp->addHist(h, i+1, 2-j); 
+								hr[i][j]->Divide(h); hr[i][j]->GetYaxis()->SetNdivisions(505);
+								hr[i][j]->SetAxisRange(0, 2, "Y");  cp->addHist(hr[i][j], i+1, 2-j, 1);
+								cp->CD(i+1, 2-j, 0); tl->DrawLine(-2.5, 0, 2.5, 0);
+								tmp = trk_tag[i]+", "+cent_tag[j];
+								tx->DrawLatexNDC(0.15,0.87, tmp); 
+								cp->CD(i+1, 2-j, 1); tl->DrawLine(-2.5, 1, 2.5, 1);
+								cp->draw95Area(i+1,2-j, -3, 3);
+						}
+				}
+				cp->SaveAs(name1+"_"+name2+"_overlay.gif");
+		}
+
 		void drawTable(TString name1, TString name2, TFile *f1, TFile *f2){
 				JTCSignalProducer *sp1 [nPt][nCent];
 				JTCSignalProducer *sp2 [nPt][nCent];
@@ -73,6 +111,6 @@ namespace signal2D{
 								if( i==0) tx->DrawLatexNDC(0.6,0.87, cent_tag[j]);
 						}
 				}
-				cp->SaveAs(name1+"_"+name2+"_overlay.pdf");
+				cp->SaveAs(name1+"_"+name2+"_overlay.gif");
 		}
 }
