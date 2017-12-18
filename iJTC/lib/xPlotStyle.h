@@ -67,13 +67,13 @@ void doublePanelFig::addHist(TH1* h, int i, int j, int n){
 }
 void doublePanelFig::histStyle(TH1* h, int n){
 		if(n==1){
-				h->GetXaxis()->SetLabelSize(0.15);
-				h->GetYaxis()->SetLabelSize(0.15);
+				h->GetXaxis()->SetLabelSize(0.12);
+				h->GetYaxis()->SetLabelSize(0.12);
 				h->GetXaxis()->CenterTitle();
 				h->GetXaxis()->SetTitleSize(0.15);
 		}
 		else{
-		h->GetYaxis()->SetLabelSize(0.1);
+		h->GetYaxis()->SetLabelSize(0.08);
 		}
 }
 void doublePanelFig::drawShadowArea(int i, int j, float x1, float x2, float y1, float y2){

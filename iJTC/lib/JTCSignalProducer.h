@@ -7,6 +7,7 @@
 #endif
 
 const Double_t etabin[22] ={-3, -2.5,-2.,-1.5, -1., -0.8, -0.6, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1., 1.5,2.,2.5, 3};
+const float drbin [15] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.};
 class JTCSignalProducer :public signalFactoryBase {
 		public :
 				JTCSignalProducer() : signalFactoryBase() {};
@@ -19,6 +20,7 @@ class JTCSignalProducer :public signalFactoryBase {
 				TH1* projX(bool doRebin, TH2D* h, float x, float y); // for general projection 
 				TH1* signal_X(bool doRebin=1){ return projX( doRebin, sig, -1, 1);}
 				TH1* raw_X(bool doRebin=1){ return projX( doRebin, raw_sig, -1, 1);}
+				TH1D* doDrIntegral(TString name);
 				void WriteTH2();
 		public :
 				TH2D* raw_sig =NULL;
@@ -26,6 +28,7 @@ class JTCSignalProducer :public signalFactoryBase {
 				TH2D* mix =NULL;
 				TH2D* mix_normalized =NULL;
 				TH2D* bkg =NULL;
+				TH1D* dr_integral = NULL;
 				bool doSmoothME = true;
 				float sideMin = 1.5, sideMax = 2.5;
 };
@@ -48,6 +51,13 @@ TH2D* JTCSignalProducer::getSignal(TString name){
 		return sig;
 }
 
+TH1D* JTCSignalProducer::doDrIntegral(TString name ){
+		TString title = sig->GetTitle();
+		TString hname = "dr_dist_"+name;
+		dr_integral = drDistMaker(sig, hname, title, 14, drbin );
+		return dr_integral;
+}
+
 void JTCSignalProducer::WriteTH2(){
 		raw_sig->Write();
 		sig->Write();
@@ -58,6 +68,7 @@ void JTCSignalProducer::WriteTH2(){
 void JTCSignalProducer::read(TFile *f , TString name){
 		TString tmp;
 		tmp = "signal_"+name;
+//		cout<<tmp<<endl;
 		sig=(TH2D*) f->Get(tmp);
 		tmp = "smoothed_mixing_"+name;
 		mix_normalized=(TH2D*) f->Get(tmp);

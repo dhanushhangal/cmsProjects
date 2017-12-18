@@ -154,7 +154,7 @@ void signalFactoryBase::drIntegral(TH2D* signal, TH1D* drDist, bool isStatError)
 						content = signal->GetBinContent(jx,jy)*xwidth*ywidth;
 						if( content ) {
 								drDist->Fill(dr, content);
-								if(!isStatError){
+								if(isStatError){
 										error = sqrt(pow(drDist->GetBinError(drDist->FindBin(dr)),2)+\
 														pow(signal->GetBinError(jx,jy)*xwidth*ywidth,2));
 								}
