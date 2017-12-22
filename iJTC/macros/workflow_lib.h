@@ -11,7 +11,7 @@
 #endif
 
 //const int nPt = 8; const int nCent =2 ;
-TString dataDumpPath = "/Users/tabris/cmsProjects/iJTC/dataSet/correlation/";
+TString dataDumpPath = "/home/dhanush/Documents/qg_jetshapes/cmsProjects/iJTC/dataset";
 
 TString trk_tag[] = {"0.7 < p_{T}^{track} < 1 GeV","1 < p_{T}^{track} < 2 GeV",
 		"2 < p_{T}^{track} < 3 GeV", "3 < p_{T}^{track} < 4 GeV",
