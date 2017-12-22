@@ -1,40 +1,35 @@
 
-const int nPt = 8;
-const int nCent = 2;
+const int nPt = 9;
+const int nCent = 5;
 namespace input_raw2D{
-		TString trk_tag[] = {"TrkPt07", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt999"};
-		TString cent_tag[]= {"Cent0","Cent30","Cent100"};
+		TString trk_tag[] = {"TrkPt0p7", "TrkPt1", "TrkPt2","TrkPt3","TrkPt4","TrkPt8","TrkPt12","TrkPt16","TrkPt20","TrkPt999"};
+		TString cent_tag[]= {"Cent0","Cent10","Cent30","Cent50","Cent70","Cent100"};
 
-		TFile *recgen_pb_nsube0_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/RecGen_JTC_200meptrig_nsub0.root");
-		TFile *recgen_pb_sube0_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/RecGen_JTC_200meptrig_sub0.root");
-		TFile *recgen_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/RecGen_PbPb_5TeV_bJTC_HPOn.root");
-		TFile *recrec_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/RecRec_PbPb_5TeV_bJTC_HPOn.root");
-		TFile *gengen_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/GenGen_PbPb_5TeV_bJTC_HPOn_CSVcutOnly.root");
-		TFile *genrec_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/GenRec_PbPb_5TeV_bJTC_HPOn_CSVcutOnly.root");
+		TFile *gengen_pb_f = TFile::Open("/data/kurt_histos/PbPb_5TeVMC_GenGenSube0_QuarkJets_fixMatch_fineBinTrkCorrs_withTrkCorrEtaSymmV2_finalJFF_noMix.root");
 
-		TH2D* raw_sig[8][2];
-		TH2D* raw_sig_pTweighted[8][2];
-		TH2D* mixing [8][2];
+		TH2D* raw_sig[9][5];
+		TH2D* raw_sig_pTweighted[9][5];
+		TH2D* mixing [9][5];
 
 		void get2DInput(TFile *f, TString cap){
 				TH1D* h1; TString tmp; double njet;
 				for(int i=0; i<nPt; ++i){
 						for(int j=0; j<nCent; ++j){
-								tmp = cap+"_all_bjets_corrpT"+cent_tag[j]+"_"+cent_tag[j+1]\
-									   +"_Pt120_Pt1000";
+								tmp = cap+"_all_jets_corrpT"+cent_tag[j]+"_"+cent_tag[j+1]\
+									   +"_Pt100_Pt1000";
 								h1 = (TH1D*) f->Get(tmp);
 								njet = h1->Integral();
 //								cout<<tmp<<endl;
-								tmp = cap+"_hbJetTrackSignalBackground_"+cent_tag[j]+"_"+cent_tag[j+1]\
-									   +"_Pt120_Pt1000_"+trk_tag[i]+"_"+trk_tag[i+1];
+								tmp = cap+"_hJetTrackSignalBackground"+cent_tag[j]+"_"+cent_tag[j+1]\
+									   +"_Pt100_Pt1000_"+trk_tag[i]+"_"+trk_tag[i+1];
 								raw_sig[i][j] = (TH2D*) f->Get(tmp);
 								raw_sig[i][j]->Scale(1.0/njet);
-								tmp = cap+"_hbJetTrackSignalBackground_pTweighted"+cent_tag[j]+"_"+cent_tag[j+1]\
-									   +"_Pt120_Pt1000_"+trk_tag[i]+"_"+trk_tag[i+1];
+								tmp = cap+"_hJetTrackSignalBackground_pTweighted"+cent_tag[j]+"_"+cent_tag[j+1]\
+									   +"_Pt100_Pt1000_"+trk_tag[i]+"_"+trk_tag[i+1];
 								raw_sig_pTweighted[i][j] = (TH2D*) f->Get(tmp);
 								raw_sig_pTweighted[i][j]->Scale(1.0/njet);
-								tmp = cap+"_hbJetTrackME"+cent_tag[j]+"_"+cent_tag[j+1]\
-									   +"_Pt120_Pt1000_"+trk_tag[i]+"_"+trk_tag[i+1];
+								tmp = cap+"_hJetTrackME"+cent_tag[j]+"_"+cent_tag[j+1]\
+									   +"_Pt100_Pt1000_"+trk_tag[i]+"_"+trk_tag[i+1];
 						//		cout<<mixing[i][j]->GetName()<<endl;
 								mixing[i][j] = (TH2D*) f->Get(tmp);
 						}
@@ -50,12 +45,7 @@ namespace input_raw2D{
 				}
 		}
 
-		void get2DInput_RecGen(){ get2DInput(recgen_pb_f, "RecoJet_GenTrack"); }
-		void get2DInput_RecRec(){ get2DInput(recrec_pb_f, "RecoJet_RecoTrack"); }
 		void get2DInput_GenGen(){ get2DInput(gengen_pb_f, "GenJet_GenTrack"); }
-		void get2DInput_GenRec(){ get2DInput(genrec_pb_f, "GenJet_RecoTrack"); }
-		void get2DInput_RecGen_nsub0(){ get2DInput(recgen_pb_nsube0_f, "RecoJet_GenTrack"); }
-		void get2DInput_RecGen_sub0(){ get2DInput(recgen_pb_sube0_f, "RecoJet_GenTrack"); }
 }
 
 namespace signal2D {
@@ -64,26 +54,16 @@ namespace signal2D {
 		TH2D* mixing[nPt][nCent];
 		TH2D* bkg[nPt][nCent];
 
-		TFile *recgen_pb_f;
-		TFile *recrec_pb_f;
 		TFile *gengen_pb_f;
-		TFile *genrec_pb_f;
-		TFile *recgen_pb_sub0_f;
-		TFile *recgen_pb_nsub0_f;
 
 		void loadFile(){
 				cout<<"reading the file.. "<<endl;
-				recgen_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/rec_gen_JTCSignal.root");
-				recrec_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/rec_rec_JTCSignal.root");
-				gengen_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/gen_gen_JTCSignal.root");
-				genrec_pb_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/gen_rec_JTCSignal.root");
-				recgen_pb_sub0_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/rec_gen_sub0_JTCSignal.root");
-				recgen_pb_nsub0_f = TFile::Open("/Users/tabris/cmsProjects/iJTC/dataSet/correlation/rec_gen_nsub0_JTCSignal.root");
+				gengen_pb_f = TFile::Open("/data/kurt_histos/PbPb_5TeVMC_GenGenSube0_QuarkJets_fixMatch_fineBinTrkCorrs_withTrkCorrEtaSymmV2_finalJFF_noMix.root");
 		}
 		void getHist(TFile *f, TString name){
 				TString tmp;
-				for(int i=0; i<7; ++i){
-						for(int j=0; j<2; ++j){
+				for(int i=0; i<nPt; ++i){
+						for(int j=0; j<nCent; ++j){
 								tmp = "signal_"+name+Form("_%d_%d",i,j);
 								//cout<<tmp<<endl;
 								sig[i][j]=(TH2D*) f->Get(tmp);
@@ -96,6 +76,4 @@ namespace signal2D {
 						}
 				}
 		}
-		void getRecRec(){ getHist(recrec_pb_f, "rec_rec");}
-		void getRecGen(){ getHist(recgen_pb_f, "rec_gen");}
 }
