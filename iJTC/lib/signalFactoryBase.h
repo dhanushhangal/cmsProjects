@@ -11,11 +11,11 @@
 #ifndef ROOT_TH2D
 #include "TH2D.h"
 #endif
-
+/*
 #ifndef doublePad_H
 #include "doublePad.h"
 #endif
-
+*/
 
 class signalFactoryBase {
 		public : 
@@ -188,7 +188,7 @@ TH1D* signalFactoryBase::drDistMaker(TH2D* signal, TString name, TString title, 
 		drIntegral(signal, drDist);
 		return drDist;
 }
-
+/*
 TH1D* signalFactoryBase::drGeoTest(TH2D* signal, TH1D* drDist){
 		TString temp = drDist->GetName();
 		TH1D* drCounts = (TH1D*) drDist->Clone(temp+"_counts");
@@ -245,7 +245,7 @@ TH1D* signalFactoryBase::drGeoTest(TH2D* signal, TH1D* drDist){
 		c->SaveAs(dump_path+"phaseSpaceCorrection.eps");
 		return geoCorr;
 }	
-
+*/
 void signalFactoryBase::doDrPhaseCorrection(TH2D* signal, TH1D* h1){
 		//const TArrayD* a = h1->GetXaxis()->GetXbins();
 		//int nbin = a->GetSize();
