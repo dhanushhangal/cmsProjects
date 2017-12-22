@@ -1,9 +1,34 @@
-
+/*
+#include <iostream>
+#include "TFile.h"
+#include "TRandom.h"
+#include "TTree.h"
+#include "TH1F.h"
+#include "TH1D.h"
+#include "TProfile.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TProfile2D.h"
+#include <TF1.h>
+#include "assert.h"
+#include <fstream>
+#include "TMath.h"
+#include "TH2F.h"
+#include "TH2D.h"
+#include "TMath.h"
+#include <TNtuple.h>
+#include "TChain.h"
+#include <TString.h>
+#include <TLatex.h>
+#include <TCut.h>
+#include <vector>
+#include "TCanvas.h"
+*/
 #include "workflow_lib.h"
 
 void runAnalysis(){
 		// pull the signal for MC
-		//input_raw2D::get2DInput_GenGen(); input_raw2D::pullSig("gen_gen");
+		input_raw2D::get2DInput_GenGen(); input_raw2D::pullSig("gen_gen");
 		//input_raw2D::get2DInput_RecGen(); input_raw2D::pullSig("rec_gen");
 		//input_raw2D::get2DInput_RecRec(); input_raw2D::pullSig("rec_rec");
 		//input_raw2D::get2DInput_RecGen_nsub0(); input_raw2D::pullSig("rec_gen_nsub0");
